@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         initViewModel()
+        setListeners()
     }
 
     private fun initViewModel() {
@@ -39,6 +40,16 @@ class MainActivity : AppCompatActivity() {
         mainViewModel.sensorsInfoLD.observe(this, ::onSensorsInfoChanged)
 
         mainViewModel.getSensorsInfo()
+    }
+
+    private fun setListeners() {
+        binding.btnStart.setOnClickListener {
+            mainViewModel.startCollect()
+        }
+
+        binding.btnStop.setOnClickListener {
+            mainViewModel.stopCollect()
+        }
     }
 
 
