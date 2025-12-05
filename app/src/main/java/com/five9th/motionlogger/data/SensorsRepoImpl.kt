@@ -50,7 +50,7 @@ class SensorsRepoImpl(app: Application) : SensorsRepo, SensorEventListener {
     private fun registerListeners() {
         val periodMicros = MICROS_IN_SECOND / SAMPLE_FREQ_HZ
 
-        sensors.accelerometer?.let { sensors.sm.registerListener(this, it, periodMicros) }
+        sensors.linearAcceleration?.let { sensors.sm.registerListener(this, it, periodMicros) }
         sensors.gyroscope?.let { sensors.sm.registerListener(this, it, periodMicros) }
         sensors.gameRotationVector?.let { sensors.sm.registerListener(this, it, periodMicros) }
     }
@@ -110,7 +110,7 @@ class SensorsRepoImpl(app: Application) : SensorsRepo, SensorEventListener {
             Sensor.TYPE_GAME_ROTATION_VECTOR -> {
                 lastEuler = processGameRotationVector(event.values)
                 rotCounter++
-                if (rotCounter % 50 == 1) Log.d("SENSOR_GROT", event.values.contentToString())
+                if (rotCounter % 50 == 1) Log.d("SENSOR_GAME", event.values.contentToString())
             }
         }
     }
