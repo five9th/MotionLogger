@@ -36,6 +36,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val sensorDataSF: StateFlow<SensorSample?> = observeSensorsUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
+    val isCollectingSF: StateFlow<Boolean> = sensorsRepo.isCollecting
+
     fun startCollect() {
         startCollectUseCase()
     }

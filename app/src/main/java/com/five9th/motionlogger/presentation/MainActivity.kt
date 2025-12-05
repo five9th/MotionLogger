@@ -6,9 +6,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.five9th.motionlogger.R
 import com.five9th.motionlogger.databinding.ActivityMainBinding
 import com.five9th.motionlogger.domain.entities.SensorsInfo
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,6 +35,7 @@ class MainActivity : AppCompatActivity() {
 
         initViewModel()
         setListeners()
+        collectFlows()
     }
 
     private fun initViewModel() {
@@ -49,6 +52,16 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnStop.setOnClickListener {
             mainViewModel.stopCollect()
+        }
+    }
+
+    private fun collectFlows() {
+        lifecycleScope.launch {
+            mainViewModel.isCollectingSF.collect { collecting ->
+                binding.tvStatus.text =
+                    if (collecting) getString(R.string.collecting)
+                    else getString(R.string.stopped)
+            }
         }
     }
 

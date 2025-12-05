@@ -15,6 +15,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.sqrt
@@ -42,8 +44,14 @@ class SensorsRepoImpl(app: Application) : SensorsRepo, SensorEventListener {
 
     private var samplingJob: Job? = null
 
-    // TODO: add isStarted flag
+    private val _isCollecting = MutableStateFlow(false)
+    override val isCollecting: StateFlow<Boolean> = _isCollecting
+
     override fun start() {
+        if (isCollecting.value) return
+
+        _isCollecting.value = true
+
         registerListeners()
         startSampler()
     }
@@ -84,6 +92,8 @@ class SensorsRepoImpl(app: Application) : SensorsRepo, SensorEventListener {
     }
 
     override fun stop() {
+        _isCollecting.value = false
+
         samplingJob?.cancel()
         sensors.sm.unregisterListener(this)
     }

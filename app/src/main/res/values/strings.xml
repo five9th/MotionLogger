@@ -12,4 +12,6 @@
     <string name="gravity">Gravity:</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
+    <string name="collecting">Collecting…</string>
+    <string name="stopped">Stopped</string>
 </resources>
