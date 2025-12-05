@@ -5,5 +5,7 @@ data class SensorsInfo(
     val hasGyroscope: Boolean,
     val hasMagnetometer: Boolean,
     val hasGameRotationVector: Boolean,
-    val hasRotationVector: Boolean
+    val hasRotationVector: Boolean,
+    val hasLinearAcceleration: Boolean,
+    val hasGravity: Boolean
 )

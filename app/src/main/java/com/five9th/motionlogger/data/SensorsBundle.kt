@@ -13,6 +13,8 @@ class SensorsBundle(context: Context) {
     val magnetometer = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
     val gameRotationVector = sm.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR)
     val rotationVector = sm.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+    val linearAcceleration = sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
+    val gravity = sm.getDefaultSensor(Sensor.TYPE_GRAVITY)
 
     fun getSensorsInfo(): SensorsInfo {
         return SensorsInfo(
@@ -20,7 +22,9 @@ class SensorsBundle(context: Context) {
             gyroscope != null,
             magnetometer != null,
             gameRotationVector != null,
-            rotationVector != null
+            rotationVector != null,
+            linearAcceleration != null,
+            gravity != null
         )
     }
 }
