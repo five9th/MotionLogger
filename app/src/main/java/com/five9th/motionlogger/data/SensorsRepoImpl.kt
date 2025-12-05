@@ -5,6 +5,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.util.Log
 import com.five9th.motionlogger.domain.entities.SensorSample
 import com.five9th.motionlogger.domain.entities.SensorsInfo
 import com.five9th.motionlogger.domain.usecases.SensorsRepo
@@ -40,6 +41,7 @@ class SensorsRepoImpl(app: Application) : SensorsRepo, SensorEventListener {
 
     private var samplingJob: Job? = null
 
+    // TODO: add isStarted flag
     override fun start() {
         registerListeners()
         startSampler()
@@ -87,16 +89,29 @@ class SensorsRepoImpl(app: Application) : SensorsRepo, SensorEventListener {
 
     override fun getFlow(): Flow<SensorSample> = _flow
 
+
+    // temp log for testing
+    var accCounter = 0
+    var gyrCounter = 0
+    var rotCounter = 0
+
     override fun onSensorChanged(event: SensorEvent) {
         when (event.sensor.type) {
-            Sensor.TYPE_LINEAR_ACCELERATION ->
+            Sensor.TYPE_LINEAR_ACCELERATION -> {
                 lastAccel = event.values.clone()
-
-            Sensor.TYPE_GYROSCOPE ->
+                accCounter++
+                if (accCounter % 50 == 1) Log.d("SENSOR_ACCEL", event.values.contentToString())
+            }
+            Sensor.TYPE_GYROSCOPE -> {
                 lastGyro = event.values.clone()
-
-            Sensor.TYPE_GAME_ROTATION_VECTOR ->
+                gyrCounter++
+                if (gyrCounter % 50 == 1) Log.d("SENSOR_GYRO", event.values.contentToString())
+            }
+            Sensor.TYPE_GAME_ROTATION_VECTOR -> {
                 lastEuler = processGameRotationVector(event.values)
+                rotCounter++
+                if (rotCounter % 50 == 1) Log.d("SENSOR_GROT", event.values.contentToString())
+            }
         }
     }
 
