@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.math.sqrt
 
 // TODO: handle the situation when some sensors are missing
 class SensorsRepoImpl(app: Application) : SensorsRepo, SensorEventListener {
@@ -119,7 +120,14 @@ class SensorsRepoImpl(app: Application) : SensorsRepo, SensorEventListener {
         val qx = values[0]
         val qy = values[1]
         val qz = values[2]
-        val qw = if (values.size >= 4) values[3] else 0f
+
+        val qw = if (values.size >= 4) {
+            values[3]
+        } else {
+            val sum = 1f - (qx*qx + qy*qy + qz*qz)
+            if (sum > 0) sqrt(sum) else 0f
+        }
+
 
         return quaternionToEuler(floatArrayOf(qx, qy, qz, qw))
     }
