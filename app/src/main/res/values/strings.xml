@@ -8,6 +8,8 @@
     <string name="magnetometer">Magnetometer:</string>
     <string name="game_rotation_vector">GameRotationVector:</string>
     <string name="rotation_vector">RotationVector:</string>
+    <string name="linear_acceleration">LinearAcceleration:</string>
+    <string name="gravity">Gravity:</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
 </resources>

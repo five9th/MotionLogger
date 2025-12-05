@@ -62,5 +62,7 @@ class MainActivity : AppCompatActivity() {
         binding.tvHasMagnetometer.text = if (sensorsInfo.hasMagnetometer) strYes else strNo
         binding.tvHasGameRotationVector.text = if (sensorsInfo.hasGameRotationVector) strYes else strNo
         binding.tvHasRotationVector.text = if (sensorsInfo.hasRotationVector) strYes else strNo
+        binding.tvHasLinearAcceleration.text = if (sensorsInfo.hasLinearAcceleration) strYes else strNo
+        binding.tvHasGravity.text = if (sensorsInfo.hasGravity) strYes else strNo
     }
 }
