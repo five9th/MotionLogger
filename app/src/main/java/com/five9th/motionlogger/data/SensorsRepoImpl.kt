@@ -82,7 +82,7 @@ class SensorsRepoImpl(app: Application) : SensorsRepo, SensorEventListener {
 
         if (a != null && g != null && e != null) {
             val sample = SensorSample(
-                timestampMs = System.currentTimeMillis(),
+                timestampMs = System.currentTimeMillis(), // TODO: make timestamp shorter
                 accX = a[0], accY = a[1], accZ = a[2],
                 gyroX = g[0], gyroY = g[1], gyroZ = g[2],
                 roll = e[0], pitch = e[1], yaw = e[2]
