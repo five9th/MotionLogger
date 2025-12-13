@@ -11,6 +11,7 @@ import com.five9th.motionlogger.R
 import com.five9th.motionlogger.databinding.ActivityMainBinding
 import com.five9th.motionlogger.domain.entities.SensorsInfo
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -57,11 +58,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun collectFlows() {
         lifecycleScope.launch {
-            mainViewModel.isCollectingSF.collect { collecting ->
-                binding.tvStatus.text =
-                    if (collecting) getString(R.string.collecting)
-                    else getString(R.string.stopped)
-            }
+            mainViewModel.isCollectingSF.collect(::onCollectingStateChanged)
+        }
+
+        lifecycleScope.launch {
+            mainViewModel.collectionStatsFS.collect(::onCollectionStatsChanged)
         }
     }
 
@@ -77,5 +78,24 @@ class MainActivity : AppCompatActivity() {
         binding.tvHasRotationVector.text = if (sensorsInfo.hasRotationVector) strYes else strNo
         binding.tvHasLinearAcceleration.text = if (sensorsInfo.hasLinearAcceleration) strYes else strNo
         binding.tvHasGravity.text = if (sensorsInfo.hasGravity) strYes else strNo
+    }
+
+    private fun onCollectingStateChanged(isCollecting: Boolean) {
+        binding.tvStatus.text =
+            if (isCollecting) getString(R.string.collecting)
+            else getString(R.string.stopped)
+    }
+
+    private fun onCollectionStatsChanged(stats: CollectionStats) {
+        binding.tvTimer.text = formatElapsed(stats.elapsedMillis)
+        binding.tvSamplesCount.text = String.format(
+            Locale.getDefault(), "%d", stats.samplesCount)
+    }
+
+    private fun formatElapsed(ms: Long): String {
+        val totalSeconds = ms / 1000
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return "%02d:%02d".format(minutes, seconds)
     }
 }
