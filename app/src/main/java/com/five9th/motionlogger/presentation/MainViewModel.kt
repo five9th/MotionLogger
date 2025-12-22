@@ -1,39 +1,23 @@
 package com.five9th.motionlogger.presentation
 
 import android.app.Application
-import android.os.SystemClock
-import android.util.Log
+import android.content.ComponentName
+import android.content.Context
+import android.content.ServiceConnection
+import android.os.IBinder
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
-import com.five9th.motionlogger.data.FilesRepoImpl
 import com.five9th.motionlogger.data.SensorsRepoImpl
-import com.five9th.motionlogger.domain.entities.SensorSample
 import com.five9th.motionlogger.domain.entities.SensorsInfo
 import com.five9th.motionlogger.domain.usecases.GetSensorsInfoUseCase
-import com.five9th.motionlogger.domain.usecases.ObserveSensorsUseCase
-import com.five9th.motionlogger.domain.usecases.SaveSamplesUseCase
-import com.five9th.motionlogger.domain.usecases.StartCollectUseCase
-import com.five9th.motionlogger.domain.usecases.StopCollectUseCase
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
-data class CollectionStats(
-    val elapsedMillis: Long,
-    val samplesCount: Int
-)
 
-// (2) TODO: collect in foreground service
 // TODO: load samples to current_session.csv every few minutes
 // TODO: display list of recorded sessions
 // TODO: add session id
@@ -42,42 +26,72 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---- repos ----
     private val sensorsRepo = SensorsRepoImpl(app) // use DI (TODO)
-    private val filesRepo = FilesRepoImpl(app) // use DI
+
+    private var service: SensorCollectionService? = null
+    private var isBound = false
 
     // ---- Use Cases ----
     private val getSensorsInfoUseCase = GetSensorsInfoUseCase(sensorsRepo)
 
-    private val observeSensorsUseCase = ObserveSensorsUseCase(sensorsRepo)
-    private val startCollectUseCase = StartCollectUseCase(sensorsRepo)
-    private val stopCollectUseCase = StopCollectUseCase(sensorsRepo)
-
-    private val saveSamplesUseCase = SaveSamplesUseCase(filesRepo)
-
-    // ---- LiveData's and Flow's ----
+    // ---- UI State ----
     private val _sensorsInfoLD = MutableLiveData<SensorsInfo>()
     val sensorsInfoLD: LiveData<SensorsInfo> = _sensorsInfoLD
 
-    private val sensorDataSF: StateFlow<SensorSample?> = observeSensorsUseCase()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+    private val _isCollectingSF = MutableStateFlow(false)
+    val isCollectingSF = _isCollectingSF.asStateFlow()
 
-    val isCollectingSF: StateFlow<Boolean> = sensorsRepo.isCollecting
-
-    private val _collectionStatsFS = MutableStateFlow(
+    private val _collectionStatsSF = MutableStateFlow(
         CollectionStats(0L, 0)
     )
-    val collectionStatsFS: StateFlow<CollectionStats> = _collectionStatsFS
+    val collectionStatsSF = _collectionStatsSF.asStateFlow()
 
+    // ---- Bind to Service ----
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+            val localBinder = binder as SensorCollectionService.LocalBinder
+            service = localBinder.getService()
+            isBound = true
 
+            collectServiceFlows()
+        }
 
-    private val collectedSamples = mutableListOf<SensorSample>()
+        override fun onServiceDisconnected(name: ComponentName?) {
+            isBound = false
+            service = null
+        }
+    }
 
-    private var startTimestamp: Long = 0L
-    private var stopTimestamp: Long = 0L
+    private fun collectServiceFlows() {
+        if (!isBound) return
 
-    private var collectingJob: Job? = null
+        viewModelScope.launch {
+            service?.isCollectingSF?.collect {
+                _isCollectingSF.value = it
+            }
+        }
 
-    private var timerJob: Job? = null
-    private var startTimerTime: Long = 0L
+        viewModelScope.launch {
+            service?.collectionStatsSF?.collect {
+                _collectionStatsSF.value = it
+            }
+        }
+    }
+
+    private fun bindToService() {
+        if (!isBound) {
+            val intent = SensorCollectionService.newIntent(application)
+            application.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+        }
+    }
+
+    override fun onCleared() {
+        if (isBound) {
+            application.unbindService(serviceConnection)
+            isBound = false
+        }
+        super.onCleared()
+    }
+
 
     fun getSensorsInfo() {
         _sensorsInfoLD.value = getSensorsInfoUseCase()
@@ -86,94 +100,16 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun startCollect() {
         if (isCollectingSF.value) return
 
-        startCollectUseCase()  // tell repo to collect sensor data
-        startCollectJob()  // saving samples from the flow to the list
-        startTimerJob()
-    }
+        // Start as foreground service
+        val intent = SensorCollectionService.newIntentStart(application)
+        application.startForegroundService(intent)
 
-    private fun startCollectJob() {
-        if (collectingJob != null) return
-
-        collectedSamples.clear()
-        startTimestamp = System.currentTimeMillis()
-
-        collectingJob = viewModelScope.launch {
-            sensorDataSF.collect { sample ->
-                if (sample != null) {
-                    collectedSamples.add(sample)
-                }
-            }
-        }
-    }
-
-    private fun startTimerJob() {
-        if (timerJob != null) return
-
-        startTimerTime = SystemClock.elapsedRealtime()
-
-        timerJob = viewModelScope.launch {
-            while (isActive) {
-                updateValuesByTimer()
-                delay(200) // update UI 5x per second (smooth, cheap)
-            }
-        }
-    }
-
-    private fun updateValuesByTimer() {
-        // elapsed time
-        val elapsed = SystemClock.elapsedRealtime() - startTimerTime
-
-        // samples count
-        val count = collectedSamples.size
-
-        _collectionStatsFS.value = CollectionStats(elapsed, count)
+        // Also bind to get updates
+        bindToService()
     }
 
     fun stopCollect() {
-        if (!isCollectingSF.value) return
-
-        stopCollectUseCase()
-        stopCollectJob()
-        stopTimerJob()
-
-        stopTimestamp = System.currentTimeMillis()
-
-        saveToCsv()
-    }
-
-    private fun stopCollectJob() {
-        collectingJob?.cancel()
-        collectingJob = null
-    }
-
-    private fun stopTimerJob() {
-        timerJob?.cancel()
-        timerJob = null
-
-        // reset values
-        _collectionStatsFS.value = CollectionStats(0L, 0)
-    }
-
-    private fun saveToCsv() {
-        if (collectedSamples.isEmpty()) {
-            Log.w(tag, "Nothing to save")
-            return
-        }
-
-        val filename = makeFileName()
-        Log.d(tag, "Saving ${collectedSamples.size} samples into \"$filename\".")
-
-        viewModelScope.launch {
-            saveSamplesUseCase(collectedSamples, filename)
-        }
-    }
-
-    private fun makeFileName(): String {
-        return "session-${formatTimestamp(startTimestamp)}-${formatTimestamp(stopTimestamp)}.csv"
-    }
-
-    private fun formatTimestamp(millis: Long): String {
-        val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-        return sdf.format(Date(millis))
+        if (!isCollectingSF.value || !isBound) return
+        service?.stopCollectAndSave()
     }
 }

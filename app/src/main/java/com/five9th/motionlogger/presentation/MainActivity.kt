@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            mainViewModel.collectionStatsFS.collect(::onCollectionStatsChanged)
+            mainViewModel.collectionStatsSF.collect(::onCollectionStatsChanged)
         }
     }
 

@@ -7,7 +7,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.Build
+import android.os.Binder
 import android.os.IBinder
 import android.os.SystemClock
 import android.util.Log
@@ -36,7 +36,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-// TODO: add binder
+
+data class CollectionStats(
+    val elapsedMillis: Long,
+    val samplesCount: Int
+)
+
 class SensorCollectionService(app: Application) : Service(), ISensorCollector {
 
     private val tag = "SensorCollectionService"
@@ -190,15 +195,18 @@ class SensorCollectionService(app: Application) : Service(), ISensorCollector {
         TODO("Not yet implemented")
     }
 
-    // ==============================
 
     // ====== Service-specific stuff ======
 
     private var isServiceStarted = false
 
-    override fun onBind(intent: Intent?): IBinder? {
-        TODO("Not yet implemented")
+    private val binder = LocalBinder()
+
+    inner class LocalBinder : Binder() {
+        fun getService(): SensorCollectionService = this@SensorCollectionService
     }
+
+    override fun onBind(intent: Intent?): IBinder = binder
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
