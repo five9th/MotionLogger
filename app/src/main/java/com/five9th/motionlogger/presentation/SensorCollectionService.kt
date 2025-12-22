@@ -2,9 +2,12 @@ package com.five9th.motionlogger.presentation
 
 import android.app.Application
 import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
 import android.os.SystemClock
 import android.util.Log
@@ -226,14 +229,38 @@ class SensorCollectionService(app: Application) : Service(), ISensorCollector {
     }
 
     private fun createChannelAndNotification(): Notification {
-        TODO()
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        createNotificationChannel(notificationManager)
+
+        return createNotification()
     }
+
+    private fun createNotificationChannel(notificationManager: NotificationManager) {
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            CHANNEL_NAME,
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    private fun createNotification() = NotificationCompat.Builder(this, CHANNEL_ID)
+        .setContentTitle("Title")
+        .setContentText("Text")
+        .setSubText("subtext")
+        .setSmallIcon(R.drawable.ic_launcher_foreground)
+        .build()
 
     companion object {
         private const val ACTION_START = "START_COLLECTION"
         private const val ACTION_STOP = "STOP_COLLECTION"
 
         private const val NOTIFICATION_ID = 100
+
+        private const val CHANNEL_ID = "collecting_sensor_data"
+        private const val CHANNEL_NAME = "Collecting sensor data"
 
         fun newIntent(context: Context) =
             Intent(context, SensorCollectionService::class.java)
