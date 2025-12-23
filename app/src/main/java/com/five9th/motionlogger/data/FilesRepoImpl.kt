@@ -7,8 +7,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedWriter
 import java.io.File
+import javax.inject.Inject
 
-class FilesRepoImpl(private val app: Application) : FilesRepo {
+class FilesRepoImpl @Inject constructor (
+    private val app: Application
+) : FilesRepo {
 
     companion object {
         private const val SESSIONS_DIR = "sessions"

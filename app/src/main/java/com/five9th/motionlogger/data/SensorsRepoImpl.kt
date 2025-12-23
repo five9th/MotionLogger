@@ -19,10 +19,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlin.math.sqrt
 
 // TODO: handle the situation when some sensors are missing
-class SensorsRepoImpl(app: Application) : SensorsRepo, SensorEventListener {
+class SensorsRepoImpl @Inject constructor (
+    app: Application
+) : SensorsRepo, SensorEventListener {
 
     companion object {
         private const val SAMPLE_FREQ_HZ = 50
