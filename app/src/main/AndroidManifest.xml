@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
         android:name=".di.MyApp"
@@ -25,7 +26,9 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".presentation.SensorCollectionService" />
+        <service android:name=".presentation.SensorCollectionService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
     </application>
 
 </manifest>

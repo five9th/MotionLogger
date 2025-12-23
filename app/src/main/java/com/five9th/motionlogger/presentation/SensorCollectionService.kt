@@ -1,6 +1,5 @@
 package com.five9th.motionlogger.presentation
 
-import android.app.Application
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -13,13 +12,13 @@ import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.five9th.motionlogger.R
-import com.five9th.motionlogger.data.FilesRepoImpl
-import com.five9th.motionlogger.data.SensorsRepoImpl
 import com.five9th.motionlogger.domain.entities.SensorSample
 import com.five9th.motionlogger.domain.usecases.ObserveSensorsUseCase
 import com.five9th.motionlogger.domain.usecases.SaveSamplesUseCase
+import com.five9th.motionlogger.domain.usecases.SensorsRepo
 import com.five9th.motionlogger.domain.usecases.StartCollectUseCase
 import com.five9th.motionlogger.domain.usecases.StopCollectUseCase
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -35,6 +34,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
 
 data class CollectionStats(
@@ -42,7 +42,8 @@ data class CollectionStats(
     val samplesCount: Int
 )
 
-class SensorCollectionService(app: Application) : Service(), ISensorCollector {
+@AndroidEntryPoint
+class SensorCollectionService : Service(), ISensorCollector {
 
     private val tag = "SensorCollectionService"
 
@@ -50,16 +51,14 @@ class SensorCollectionService(app: Application) : Service(), ISensorCollector {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    // ---- repos ----
-    private val sensorsRepo = SensorsRepoImpl(app) // use DI (TODO)
-    private val filesRepo = FilesRepoImpl(app) // use DI
+    // ---- Repo and Use Cases ----
+    @Inject private lateinit var sensorsRepo: SensorsRepo
 
-    // ---- Use Cases ----
-    private val observeSensorsUseCase = ObserveSensorsUseCase(sensorsRepo)
-    private val startCollectUseCase = StartCollectUseCase(sensorsRepo)
-    private val stopCollectUseCase = StopCollectUseCase(sensorsRepo)
+    @Inject private lateinit var observeSensorsUseCase: ObserveSensorsUseCase
+    @Inject private lateinit var startCollectUseCase: StartCollectUseCase
+    @Inject private lateinit var stopCollectUseCase: StopCollectUseCase
 
-    private val saveSamplesUseCase = SaveSamplesUseCase(filesRepo)
+    @Inject private lateinit var saveSamplesUseCase: SaveSamplesUseCase
 
     // ---- Flows ----
     private val sensorDataSF: StateFlow<SensorSample?> = observeSensorsUseCase()
