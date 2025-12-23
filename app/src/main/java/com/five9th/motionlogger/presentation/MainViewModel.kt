@@ -10,28 +10,29 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
-import com.five9th.motionlogger.data.SensorsRepoImpl
 import com.five9th.motionlogger.domain.entities.SensorsInfo
 import com.five9th.motionlogger.domain.usecases.GetSensorsInfoUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
 // TODO: load samples to current_session.csv every few minutes
 // TODO: display list of recorded sessions
 // TODO: add session id
-class MainViewModel(app: Application) : AndroidViewModel(app) {
+
+@HiltViewModel
+class MainViewModel @Inject constructor (
+    private val getSensorsInfoUseCase: GetSensorsInfoUseCase,
+    application: Application
+) : AndroidViewModel(application) {
+
     private val tag = "MainViewModel"
 
-    // ---- repos ----
-    private val sensorsRepo = SensorsRepoImpl(app) // use DI (TODO)
-
-    private var service: SensorCollectionService? = null
+    private var service: SensorCollectionService? = null // TODO: deal with this
     private var isBound = false
-
-    // ---- Use Cases ----
-    private val getSensorsInfoUseCase = GetSensorsInfoUseCase(sensorsRepo)
 
     // ---- UI State ----
     private val _sensorsInfoLD = MutableLiveData<SensorsInfo>()

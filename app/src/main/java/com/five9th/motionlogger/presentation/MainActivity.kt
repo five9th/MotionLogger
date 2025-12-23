@@ -2,22 +2,24 @@ package com.five9th.motionlogger.presentation
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.five9th.motionlogger.R
 import com.five9th.motionlogger.databinding.ActivityMainBinding
 import com.five9th.motionlogger.domain.entities.SensorsInfo
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Locale
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private val tag = "MainActivity"
 
-    private lateinit var mainViewModel: MainViewModel
+    private val mainViewModel: MainViewModel by viewModels()
 
     private lateinit var binding: ActivityMainBinding
 
@@ -40,9 +42,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initViewModel() {
-        mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
         mainViewModel.sensorsInfoLD.observe(this, ::onSensorsInfoChanged)
-
         mainViewModel.getSensorsInfo()
     }
 
