@@ -1,7 +1,11 @@
 package com.five9th.motionlogger.domain.usecases
 
+import javax.inject.Inject
 
-class StartCollectUseCase(private val repo: SensorsRepo) {
+
+class StartCollectUseCase @Inject constructor (
+    private val repo: SensorsRepo
+) {
     operator fun invoke() {
         repo.start()
     }
