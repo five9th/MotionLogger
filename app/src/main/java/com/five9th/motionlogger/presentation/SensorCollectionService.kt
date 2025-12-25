@@ -42,6 +42,7 @@ data class CollectionStats(
     val samplesCount: Int
 )
 
+// TODO: move non-service logic into some worker/runner class
 @AndroidEntryPoint
 class SensorCollectionService : Service(), ISensorCollector {
 
@@ -52,24 +53,23 @@ class SensorCollectionService : Service(), ISensorCollector {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     // ---- Repo and Use Cases ----
-    @Inject private lateinit var sensorsRepo: SensorsRepo
+    @Inject lateinit var sensorsRepo: SensorsRepo
 
-    @Inject private lateinit var observeSensorsUseCase: ObserveSensorsUseCase
-    @Inject private lateinit var startCollectUseCase: StartCollectUseCase
-    @Inject private lateinit var stopCollectUseCase: StopCollectUseCase
+    @Inject lateinit var observeSensorsUseCase: ObserveSensorsUseCase
+    @Inject lateinit var startCollectUseCase: StartCollectUseCase
+    @Inject lateinit var stopCollectUseCase: StopCollectUseCase
 
-    @Inject private lateinit var saveSamplesUseCase: SaveSamplesUseCase
+    @Inject lateinit var saveSamplesUseCase: SaveSamplesUseCase
 
     // ---- Flows ----
-    private val sensorDataSF: StateFlow<SensorSample?> = observeSensorsUseCase()
-        .stateIn(scope, SharingStarted.WhileSubscribed(), null)
+    private lateinit var sensorDataSF: StateFlow<SensorSample?>
+
+    override lateinit var isCollectingSF: StateFlow<Boolean>
 
     private val _collectionStatsSF = MutableStateFlow(
         CollectionStats(0L, 0)
     )
     override val collectionStatsSF: StateFlow<CollectionStats> = _collectionStatsSF
-
-    override val isCollectingSF: StateFlow<Boolean> = sensorsRepo.isCollecting
 
     // ---- Variables ----
     private val collectedSamples = mutableListOf<SensorSample>()
@@ -83,6 +83,18 @@ class SensorCollectionService : Service(), ISensorCollector {
     private var startTimerTime: Long = 0L
 
     // ---- Methods ----
+
+    override fun onCreate() {  // Hilt injects before onCreate()
+        super.onCreate()
+        initFlows()
+    }
+
+    private fun initFlows() {  // After onCreate() was called
+        sensorDataSF = observeSensorsUseCase()
+            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
+
+        isCollectingSF = sensorsRepo.isCollecting
+    }
 
     override fun startCollect() {
         if (isCollectingSF.value) return
@@ -253,7 +265,7 @@ class SensorCollectionService : Service(), ISensorCollector {
         notificationManager.createNotificationChannel(channel)
     }
 
-    private fun createNotification() = NotificationCompat.Builder(this, CHANNEL_ID)
+    private fun createNotification() = NotificationCompat.Builder(this, CHANNEL_ID) // notification placeholder (todo)
         .setContentTitle("Title")
         .setContentText("Text")
         .setSubText("subtext")
