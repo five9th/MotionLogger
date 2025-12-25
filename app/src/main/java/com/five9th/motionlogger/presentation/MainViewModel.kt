@@ -2,7 +2,6 @@ package com.five9th.motionlogger.presentation
 
 import android.app.Application
 import android.content.ComponentName
-import android.content.Context
 import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.lifecycle.AndroidViewModel
@@ -31,7 +30,8 @@ class MainViewModel @Inject constructor (
 
     private val tag = "MainViewModel"
 
-    private var service: SensorCollectionService? = null // TODO: deal with this
+    // TODO: maybe ViewModel should not interact with a service directly
+    private var service: SensorCollectionService? = null
     private var isBound = false
 
     // ---- UI State ----
@@ -78,10 +78,17 @@ class MainViewModel @Inject constructor (
         }
     }
 
+    // after serviceConnection got initialized
+    init {
+        // check if the service is running (in case activity was finished and recreated)
+        bindToService()
+    }
+
+    /** If Service is already bound or doesn't exist - nothing happens */
     private fun bindToService() {
         if (!isBound) {
             val intent = SensorCollectionService.newIntent(application)
-            application.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+            application.bindService(intent, serviceConnection, 0)
         }
     }
 
