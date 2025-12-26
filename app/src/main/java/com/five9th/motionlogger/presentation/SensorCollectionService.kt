@@ -3,6 +3,7 @@ package com.five9th.motionlogger.presentation
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -82,11 +83,17 @@ class SensorCollectionService : Service(), ISensorCollector {
     private var timerJob: Job? = null
     private var startTimerTime: Long = 0L
 
+    private var updateNotificationJob: Job? = null
+
     // ---- Methods ----
 
     override fun onCreate() {  // Hilt injects before onCreate()
         super.onCreate()
         initFlows()
+
+        notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        builder = createNotificationBuilder()
+        createNotificationChannel()
     }
 
     private fun initFlows() {  // After onCreate() was called
@@ -209,6 +216,10 @@ class SensorCollectionService : Service(), ISensorCollector {
 
     // ====== Service-specific stuff ======
 
+    private lateinit var notificationManager: NotificationManager
+
+    private lateinit var builder: NotificationCompat.Builder
+
     private var isServiceStarted = false
 
     private val binder = LocalBinder()
@@ -230,11 +241,24 @@ class SensorCollectionService : Service(), ISensorCollector {
 
     private fun startCollectionService() {
         if (!isServiceStarted) {
-            startForeground(NOTIFICATION_ID, createChannelAndNotification())
+            startForeground(NOTIFICATION_ID, rebuildNotification())
             isServiceStarted = true
+
+            startUpdNotificationJob()
         }
 
         startCollect()
+    }
+
+    private fun startUpdNotificationJob() {
+        if (updateNotificationJob != null) return
+
+        updateNotificationJob = scope.launch {
+            while (isActive) {
+                updateNotification()
+                delay(1000) // slower update rate than ViewModel
+            }
+        }
     }
 
     private fun stopCollectionService() {
@@ -247,30 +271,78 @@ class SensorCollectionService : Service(), ISensorCollector {
         super.onDestroy()
     }
 
-    private fun createChannelAndNotification(): Notification {
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+    private fun createNotificationBuilder(): NotificationCompat.Builder {
+        // Intent to open app when notification is tapped
+        // TODO: fix that the app can be opened multiple times
+        val contentIntent = PendingIntent.getActivity(
+            this,
+            0,
+            Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
-        createNotificationChannel(notificationManager)
+        // Stop action button
+        val stopIntent = Intent(this, SensorCollectionService::class.java).apply {
+            action = ACTION_STOP
+        }
+        val stopPendingIntent = PendingIntent.getService(
+            this,
+            0,
+            stopIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
-        return createNotification()
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(getString(R.string.collecting_sensor_data))
+            .setContentText("collecting...")
+            .setSmallIcon(R.drawable.ic_sensors)
+            .setOnlyAlertOnce(true)
+            .setOngoing(true) // Cannot be dismissed by user
+            .setContentIntent(contentIntent)
+            .addAction(
+                R.drawable.ic_stop,
+                "Stop",
+                stopPendingIntent
+            )
     }
 
-    private fun createNotificationChannel(notificationManager: NotificationManager) {
+    private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_DEFAULT
-        )
+            getString(R.string.notif_channel_name),
+            NotificationManager.IMPORTANCE_LOW // LOW = no sound/vibration
+        ).apply {
+            description = getString(R.string.notif_channel_description)
+            setShowBadge(false)
+        }
 
         notificationManager.createNotificationChannel(channel)
     }
 
-    private fun createNotification() = NotificationCompat.Builder(this, CHANNEL_ID) // notification placeholder (todo)
-        .setContentTitle("Title")
-        .setContentText("Text")
-        .setSubText("subtext")
-        .setSmallIcon(R.drawable.ic_launcher_foreground)
+    private fun rebuildNotification(
+        elapsedTime: String = "00:00",
+        sampleCount: Int = 0
+    ): Notification = builder
+        .setContentText(getString(R.string.notif_content_text, elapsedTime, sampleCount))
         .build()
+
+    private fun updateNotification() {
+        val stats = collectionStatsSF.value
+        val elapsed = formatElapsed(stats.elapsedMillis)
+        val count = stats.samplesCount
+
+        val notification = rebuildNotification(elapsed, count)
+
+        notificationManager.notify(NOTIFICATION_ID, notification)
+    }
+
+    private fun formatElapsed(ms: Long): String { // todo: move to a static helper class
+        val totalSeconds = ms / 1000
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return "%02d:%02d".format(minutes, seconds)
+    }
+
 
     companion object {
         private const val ACTION_START = "START_COLLECTION"
@@ -279,7 +351,6 @@ class SensorCollectionService : Service(), ISensorCollector {
         private const val NOTIFICATION_ID = 100
 
         private const val CHANNEL_ID = "collecting_sensor_data"
-        private const val CHANNEL_NAME = "Collecting sensor data"
 
         fun newIntent(context: Context) =
             Intent(context, SensorCollectionService::class.java)
