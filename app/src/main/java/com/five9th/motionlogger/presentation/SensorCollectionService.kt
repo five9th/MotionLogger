@@ -273,7 +273,6 @@ class SensorCollectionService : Service(), ISensorCollector {
 
     private fun createNotificationBuilder(): NotificationCompat.Builder {
         // Intent to open app when notification is tapped
-        // TODO: fix that the app can be opened multiple times
         val contentIntent = PendingIntent.getActivity(
             this,
             0,
