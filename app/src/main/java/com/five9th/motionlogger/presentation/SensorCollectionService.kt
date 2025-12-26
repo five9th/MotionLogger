@@ -32,9 +32,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 
 
@@ -201,12 +198,9 @@ class SensorCollectionService : Service(), ISensorCollector {
     }
 
     private fun makeFileName(): String {
-        return "session-${formatTimestamp(startTimestamp)}-${formatTimestamp(stopTimestamp)}.csv"
-    }
-
-    private fun formatTimestamp(millis: Long): String {
-        val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-        return sdf.format(Date(millis))
+        val from = TimeFormatHelper.unixTimeMillisToHhMmSs(startTimestamp)
+        val to = TimeFormatHelper.unixTimeMillisToHhMmSs(stopTimestamp)
+        return "session-$from-$to.csv"
     }
 
     override fun getCollectedData(): List<SensorSample> {
@@ -327,19 +321,12 @@ class SensorCollectionService : Service(), ISensorCollector {
 
     private fun updateNotification() {
         val stats = collectionStatsSF.value
-        val elapsed = formatElapsed(stats.elapsedMillis)
+        val elapsed = TimeFormatHelper.elapsedMillisToMmSs(stats.elapsedMillis)
         val count = stats.samplesCount
 
         val notification = rebuildNotification(elapsed, count)
 
         notificationManager.notify(NOTIFICATION_ID, notification)
-    }
-
-    private fun formatElapsed(ms: Long): String { // todo: move to a static helper class
-        val totalSeconds = ms / 1000
-        val minutes = totalSeconds / 60
-        val seconds = totalSeconds % 60
-        return "%02d:%02d".format(minutes, seconds)
     }
 
 

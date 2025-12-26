@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         mainViewModel.getSensorsInfo()
     }
 
-    private fun setListeners() {
+    private fun setListeners() { // TODO: check for notification permission if Android 13+
         binding.btnStart.setOnClickListener {
             mainViewModel.startCollect()
         }
@@ -87,15 +87,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onCollectionStatsChanged(stats: CollectionStats) {
-        binding.tvTimer.text = formatElapsed(stats.elapsedMillis)
+        binding.tvTimer.text = TimeFormatHelper.elapsedMillisToMmSs(stats.elapsedMillis)
         binding.tvSamplesCount.text = String.format(
             Locale.getDefault(), "%d", stats.samplesCount)
-    }
-
-    private fun formatElapsed(ms: Long): String {
-        val totalSeconds = ms / 1000
-        val minutes = totalSeconds / 60
-        val seconds = totalSeconds % 60
-        return "%02d:%02d".format(minutes, seconds)
     }
 }
