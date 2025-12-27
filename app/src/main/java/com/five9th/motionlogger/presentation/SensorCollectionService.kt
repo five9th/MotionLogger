@@ -14,7 +14,9 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.five9th.motionlogger.R
 import com.five9th.motionlogger.domain.entities.SensorSample
+import com.five9th.motionlogger.domain.usecases.GetLastIdUseCase
 import com.five9th.motionlogger.domain.usecases.ObserveSensorsUseCase
+import com.five9th.motionlogger.domain.usecases.SaveLastIdUseCase
 import com.five9th.motionlogger.domain.usecases.SaveSamplesUseCase
 import com.five9th.motionlogger.domain.usecases.SensorsRepo
 import com.five9th.motionlogger.domain.usecases.StartCollectUseCase
@@ -29,9 +31,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 
@@ -59,6 +63,9 @@ class SensorCollectionService : Service(), ISensorCollector {
 
     @Inject lateinit var saveSamplesUseCase: SaveSamplesUseCase
 
+    @Inject lateinit var saveLastIdUseCase: SaveLastIdUseCase
+    @Inject lateinit var getLastIdUseCase: GetLastIdUseCase
+
     // ---- Flows ----
     private lateinit var sensorDataSF: StateFlow<SensorSample?>
 
@@ -67,7 +74,10 @@ class SensorCollectionService : Service(), ISensorCollector {
     private val _collectionStatsSF = MutableStateFlow(
         CollectionStats(0L, 0)
     )
-    override val collectionStatsSF: StateFlow<CollectionStats> = _collectionStatsSF
+    override val collectionStatsSF: StateFlow<CollectionStats> = _collectionStatsSF.asStateFlow()
+
+    private val _sessionIdSF = MutableStateFlow(ID_UNDEFINED)
+    override val sessionIdSF: StateFlow<Int> = _sessionIdSF.asStateFlow()
 
     // ---- Variables ----
     private val collectedSamples = mutableListOf<SensorSample>()
@@ -82,15 +92,17 @@ class SensorCollectionService : Service(), ISensorCollector {
 
     private var updateNotificationJob: Job? = null
 
+    private var sessionId = ID_UNDEFINED
+    private var readLastIdJob: Job? = null
+
     // ---- Methods ----
 
     override fun onCreate() {  // Hilt injects before onCreate()
         super.onCreate()
-        initFlows()
 
-        notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        builder = createNotificationBuilder()
-        createNotificationChannel()
+        initFlows()
+        initNotification()
+        initLastId()
     }
 
     private fun initFlows() {  // After onCreate() was called
@@ -100,12 +112,66 @@ class SensorCollectionService : Service(), ISensorCollector {
         isCollectingSF = sensorsRepo.isCollecting
     }
 
+    private fun initNotification() {
+        notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        builder = createNotificationBuilder()
+        createNotificationChannel()
+    }
+
+    private fun initLastId() {
+        readLastIdJob = scope.launch {
+            sessionId = getLastIdUseCase()
+        }
+    }
+
     override fun startCollect() {
         if (isCollectingSF.value) return
+
+        setIdForNewSession()
 
         startCollectUseCase()  // tell repo to collect sensor data
         startCollectJob()  // saving samples from the flow to the list
         startTimerJob()
+    }
+
+    private fun setIdForNewSession() { // TODO: test this sequence
+        if (sessionId == ID_UNDEFINED) { // if last id hasn't been read (yet)
+            defferIdIncrementation()
+        }
+        else {
+            incrementSessionId()
+        }
+    }
+
+    private fun defferIdIncrementation() {
+        scope.launch {
+            // wait for data
+            withTimeoutOrNull(2000) {
+                readLastIdJob?.join()
+            }
+            readLastIdJob?.cancel() // cansel after the wait (in case it's still running)
+
+            // if id is still undefined after the wait
+            if (sessionId == ID_UNDEFINED) {
+                handleMissingLastSessionId() // set some value into sessionId
+            }
+
+            incrementSessionId()
+        }
+    }
+
+    private fun incrementSessionId() {
+        sessionId++
+        _sessionIdSF.value = sessionId
+
+        scope.launch {
+            saveLastIdUseCase(sessionId)
+        }
+    }
+
+    /** Defines what the app does if it failed to retrieve last session ID */
+    private fun handleMissingLastSessionId() {
+        sessionId = 0 // just start over
     }
 
     private fun startCollectJob() {
@@ -200,11 +266,7 @@ class SensorCollectionService : Service(), ISensorCollector {
     private fun makeFileName(): String {
         val from = TimeFormatHelper.unixTimeMillisToHhMmSs(startTimestamp)
         val to = TimeFormatHelper.unixTimeMillisToHhMmSs(stopTimestamp)
-        return "session-$from-$to.csv"
-    }
-
-    override fun getCollectedData(): List<SensorSample> {
-        TODO("Not yet implemented")
+        return "session-$sessionId-$from-$to.csv"
     }
 
 
@@ -333,6 +395,8 @@ class SensorCollectionService : Service(), ISensorCollector {
     companion object {
         private const val ACTION_START = "START_COLLECTION"
         private const val ACTION_STOP = "STOP_COLLECTION"
+
+        private const val ID_UNDEFINED = -1
 
         private const val NOTIFICATION_ID = 100
 
