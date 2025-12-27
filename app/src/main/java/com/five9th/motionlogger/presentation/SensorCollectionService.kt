@@ -13,6 +13,7 @@ import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.five9th.motionlogger.R
+import com.five9th.motionlogger.domain.entities.CollectingSession
 import com.five9th.motionlogger.domain.entities.SensorSample
 import com.five9th.motionlogger.domain.usecases.GetLastIdUseCase
 import com.five9th.motionlogger.domain.usecases.ObserveSensorsUseCase
@@ -255,19 +256,21 @@ class SensorCollectionService : Service(), ISensorCollector {
             return null
         }
 
-        val filename = makeFileName()
-        Log.d(tag, "Saving ${collectedSamples.size} samples into \"$filename\".")
+        val session = makeSession()
+
+        Log.d(tag, "Saving session #${session.id} (${session.samples.size} samples).")
 
         return scope.launch {
-            saveSamplesUseCase(collectedSamples, filename)
+            saveSamplesUseCase(session)
         }
     }
 
-    private fun makeFileName(): String {
-        val from = TimeFormatHelper.unixTimeMillisToHhMmSs(startTimestamp)
-        val to = TimeFormatHelper.unixTimeMillisToHhMmSs(stopTimestamp)
-        return "session-$sessionId-$from-$to.csv"
-    }
+    private fun makeSession() = CollectingSession(
+        sessionId,
+        collectedSamples,
+        TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(startTimestamp),
+        TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(stopTimestamp)
+    )
 
 
     // ====== Service-specific stuff ======
