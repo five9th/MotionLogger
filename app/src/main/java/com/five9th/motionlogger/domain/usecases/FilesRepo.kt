@@ -4,4 +4,6 @@ import com.five9th.motionlogger.domain.entities.SensorSample
 
 interface FilesRepo {
     suspend fun saveSamples(samples: List<SensorSample>, filename: String)
+    suspend fun saveLastId(id: Int)
+    suspend fun getLastId(): Int
 }
