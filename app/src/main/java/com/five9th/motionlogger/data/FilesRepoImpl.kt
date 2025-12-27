@@ -2,9 +2,7 @@ package com.five9th.motionlogger.data
 
 import android.app.Application
 import com.five9th.motionlogger.domain.entities.CollectingSession
-import com.five9th.motionlogger.domain.entities.SensorSample
 import com.five9th.motionlogger.domain.usecases.FilesRepo
-import com.five9th.motionlogger.presentation.TimeFormatHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedWriter
@@ -19,38 +17,31 @@ class FilesRepoImpl @Inject constructor (
         private const val SESSIONS_DIR = "sessions"
         private const val LAST_ID_FILE = "last_session_id.txt"
 
-        private const val FILENAME_PATTERN = "session-%0d-%0s-%0s.csv" // session-1-12:35:42-12:40:21.csv
+        const val FILENAME_PATTERN = "session-%03d-%s-%s.csv" // session-1-12:35:42-12:40:21.csv
     }
+
+    private val mapper = RepoMapper()
 
     override suspend fun saveSession(session: CollectingSession) {
-        val filename = makeFileName(session)
-        saveSamples(session.samples, filename)
+        saveSamples(mapper.mapDomainToFileModel(session))
     }
 
-    // TODO: use mapper: session -> (filename, samples)
-    private fun makeFileName(session: CollectingSession): String {
-        val id = session.id
-        val start = TimeFormatHelper.timeOfDaySecondsToHhMmSs(session.startTimeInSeconds)
-        val stop = TimeFormatHelper.timeOfDaySecondsToHhMmSs(session.stopTimeInSeconds)
-
-        return FILENAME_PATTERN.format(id, start, stop)
-    }
-
-    private suspend fun saveSamples(samples: List<SensorSample>, filename: String) {
+    private suspend fun saveSamples(fileModel: SessionCSVModel) {
         withContext(Dispatchers.IO) {
             val sessionsDir = getSessionsDir()
-            val file = File(sessionsDir, filename)
+            val file = File(sessionsDir, fileModel.filename)
 
             file.bufferedWriter().use { writer ->
-                writeSamples(writer, samples)
+                writeSamples(writer, fileModel)
             }
         }
     }
 
-    private fun writeSamples(writer: BufferedWriter, samples: List<SensorSample>) {
-        writer.appendLine("timestamp,ax,ay,az,gx,gy,gz,roll,pitch,yaw")  // <-- this hardcoded stuff is kinda bad :/
+    private fun writeSamples(writer: BufferedWriter, fileModel: SessionCSVModel) {
+        val columnNames = fileModel.columns.joinToString(separator = ",")
+        writer.appendLine(columnNames)
 
-        for (s in samples) {
+        for (s in fileModel.samples) {
             writer.appendLine(
                 "${s.timestampMs},${s.accX},${s.accY},${s.accZ}," +
                         "${s.gyroX},${s.gyroY},${s.gyroZ}," +

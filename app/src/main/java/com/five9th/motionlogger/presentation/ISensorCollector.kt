@@ -1,6 +1,5 @@
 package com.five9th.motionlogger.presentation
 
-import com.five9th.motionlogger.domain.entities.SensorSample
 import kotlinx.coroutines.flow.StateFlow
 
 interface ISensorCollector {
