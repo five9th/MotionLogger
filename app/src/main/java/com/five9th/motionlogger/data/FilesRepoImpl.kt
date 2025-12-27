@@ -15,6 +15,7 @@ class FilesRepoImpl @Inject constructor (
 
     companion object {
         private const val SESSIONS_DIR = "sessions"
+        private const val LAST_ID_FILE = "last_session_id.txt"
     }
 
     override suspend fun saveSamples(samples: List<SensorSample>, filename: String) {
@@ -40,6 +41,22 @@ class FilesRepoImpl @Inject constructor (
         }
     }
 
+    override suspend fun saveLastId(id: Int) {
+        withContext(Dispatchers.IO) {
+            lastIdFile.writeText(id.toString())
+        }
+    }
+
+    override suspend fun getLastId(): Int {
+        return withContext(Dispatchers.IO) {
+            if (!lastIdFile.exists()) {
+                0 // start from 0 if no sessions yet
+            } else {
+                lastIdFile.readText().trim().toIntOrNull() ?: 0
+            }
+        }
+    }
+
     private fun getSessionsDir(): File {
         val baseDir = app.getExternalFilesDir(null)
         val sessionsDir = File(baseDir, SESSIONS_DIR)
@@ -50,4 +67,7 @@ class FilesRepoImpl @Inject constructor (
 
         return sessionsDir
     }
+
+    private val lastIdFile: File
+        get() = File(app.getExternalFilesDir(null), LAST_ID_FILE)
 }
