@@ -15,6 +15,7 @@ import androidx.core.app.NotificationCompat
 import com.five9th.motionlogger.R
 import com.five9th.motionlogger.domain.entities.CollectingSession
 import com.five9th.motionlogger.domain.entities.SensorSample
+import com.five9th.motionlogger.domain.entities.SessionInfo
 import com.five9th.motionlogger.domain.usecases.GetLastIdUseCase
 import com.five9th.motionlogger.domain.usecases.ObserveSensorsUseCase
 import com.five9th.motionlogger.domain.usecases.SaveLastIdUseCase
@@ -22,6 +23,7 @@ import com.five9th.motionlogger.domain.usecases.SaveSamplesUseCase
 import com.five9th.motionlogger.domain.usecases.SensorsRepo
 import com.five9th.motionlogger.domain.usecases.StartCollectUseCase
 import com.five9th.motionlogger.domain.usecases.StopCollectUseCase
+import com.five9th.motionlogger.domain.utils.TimeFormatHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

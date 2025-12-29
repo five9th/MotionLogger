@@ -1,4 +1,4 @@
-package com.five9th.motionlogger.presentation
+package com.five9th.motionlogger.domain.utils
 
 import java.text.SimpleDateFormat
 import java.util.Calendar

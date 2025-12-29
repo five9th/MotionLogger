@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import com.five9th.motionlogger.R
 import com.five9th.motionlogger.databinding.ActivityMainBinding
 import com.five9th.motionlogger.domain.entities.SensorsInfo
+import com.five9th.motionlogger.domain.utils.TimeFormatHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Locale

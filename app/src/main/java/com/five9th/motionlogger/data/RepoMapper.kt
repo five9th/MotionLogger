@@ -2,7 +2,7 @@ package com.five9th.motionlogger.data
 
 import com.five9th.motionlogger.data.FilesRepoImpl.Companion.FILENAME_PATTERN
 import com.five9th.motionlogger.domain.entities.CollectingSession
-import com.five9th.motionlogger.presentation.TimeFormatHelper
+import com.five9th.motionlogger.domain.utils.TimeFormatHelper
 
 class RepoMapper {
     fun mapDomainToFileModel(session: CollectingSession): SessionCSVModel {
