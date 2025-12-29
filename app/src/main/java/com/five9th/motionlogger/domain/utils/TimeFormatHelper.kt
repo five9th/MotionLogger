@@ -32,11 +32,22 @@ class TimeFormatHelper {
         }
 
         fun timeOfDaySecondsToHhMmSs(seconds: Int): String {
-            val h = seconds / 3600
-            val m = (seconds % 3600) / 60
-            val s = seconds % 60
-            return "%02d:%02d:%02d".format(h, m, s)
+            val t = timeBundleFromSeconds(seconds)
+            return "%02d:%02d:%02d".format(t.hours, t.minutes, t.seconds)
         }
 
+        fun timeBundleFromSeconds(seconds: Int): TimeBundle {
+            return TimeBundle(
+                hours = seconds / 3600,
+                minutes = (seconds % 3600) / 60,
+                seconds = seconds % 60
+            )
+        }
+
+        data class TimeBundle(
+            val hours: Int,
+            val minutes: Int,
+            val seconds: Int
+        )
     }
 }
