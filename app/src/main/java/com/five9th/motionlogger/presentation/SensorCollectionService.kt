@@ -268,10 +268,12 @@ class SensorCollectionService : Service(), ISensorCollector {
     }
 
     private fun makeSession() = CollectingSession(
-        sessionId,
-        collectedSamples,
-        TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(startTimestamp),
-        TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(stopTimestamp)
+        SessionInfo(
+            id = sessionId,
+            startTimeInSeconds = TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(startTimestamp),
+            stopTimeInSeconds = TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(stopTimestamp)
+        ),
+        collectedSamples
     )
 
 
