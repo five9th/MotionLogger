@@ -1,4 +1,4 @@
-package com.five9th.motionlogger.presentation
+package com.five9th.motionlogger.presentation.service
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -24,6 +24,8 @@ import com.five9th.motionlogger.domain.usecases.SensorsRepo
 import com.five9th.motionlogger.domain.usecases.StartCollectUseCase
 import com.five9th.motionlogger.domain.usecases.StopCollectUseCase
 import com.five9th.motionlogger.domain.utils.TimeFormatHelper
+import com.five9th.motionlogger.presentation.ui.MainActivity
+import com.five9th.motionlogger.presentation.uimodel.CollectionStats
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,11 +43,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
-
-data class CollectionStats(
-    val elapsedMillis: Long,
-    val samplesCount: Int
-)
 
 // TODO: move non-service logic into some worker/runner class
 @AndroidEntryPoint

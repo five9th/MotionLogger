@@ -1,4 +1,4 @@
-package com.five9th.motionlogger.presentation
+package com.five9th.motionlogger.presentation.ui
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
@@ -11,6 +11,8 @@ import com.five9th.motionlogger.R
 import com.five9th.motionlogger.databinding.ActivityMainBinding
 import com.five9th.motionlogger.domain.entities.SensorsInfo
 import com.five9th.motionlogger.domain.utils.TimeFormatHelper
+import com.five9th.motionlogger.presentation.uimodel.CollectionStats
+import com.five9th.motionlogger.presentation.vm.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Locale

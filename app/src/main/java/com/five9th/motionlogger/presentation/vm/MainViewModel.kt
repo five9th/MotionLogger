@@ -1,4 +1,4 @@
-package com.five9th.motionlogger.presentation
+package com.five9th.motionlogger.presentation.vm
 
 import android.app.Application
 import android.content.ComponentName
@@ -11,6 +11,8 @@ import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.five9th.motionlogger.domain.entities.SensorsInfo
 import com.five9th.motionlogger.domain.usecases.GetSensorsInfoUseCase
+import com.five9th.motionlogger.presentation.uimodel.CollectionStats
+import com.five9th.motionlogger.presentation.service.SensorCollectionService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
