@@ -2,8 +2,10 @@ package com.five9th.motionlogger.di
 
 import com.five9th.motionlogger.data.FilesRepoImpl
 import com.five9th.motionlogger.data.SensorsRepoImpl
-import com.five9th.motionlogger.domain.usecases.FilesRepo
-import com.five9th.motionlogger.domain.usecases.SensorsRepo
+import com.five9th.motionlogger.data.SessionsRepoImpl
+import com.five9th.motionlogger.domain.repos.FilesRepo
+import com.five9th.motionlogger.domain.repos.SensorsRepo
+import com.five9th.motionlogger.domain.repos.SessionsRepo
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -21,4 +23,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindFilesRepo(impl: FilesRepoImpl): FilesRepo
+
+    @Binds
+    @Singleton
+    abstract fun bindSessionsRepo(impl: SessionsRepoImpl): SessionsRepo
 }
