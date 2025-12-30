@@ -2,6 +2,7 @@ package com.five9th.motionlogger.data
 
 import android.app.Application
 import com.five9th.motionlogger.domain.entities.CollectingSession
+import com.five9th.motionlogger.domain.entities.SessionInfo
 import com.five9th.motionlogger.domain.repos.FilesRepo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -48,6 +49,19 @@ class FilesRepoImpl @Inject constructor (
                         "${s.roll},${s.pitch},${s.yaw}"
             )
         }
+    }
+
+    override suspend fun getSavedSessions(): List<SessionInfo> {
+        // TODO: read actual files
+        return listOf(
+            SessionInfo(  // test dump
+                123, 65, 3700
+            )
+        )
+    }
+
+    override suspend fun removeSession(sessionId: Int) {
+        TODO("Not yet implemented")
     }
 
     override suspend fun saveLastId(id: Int) {

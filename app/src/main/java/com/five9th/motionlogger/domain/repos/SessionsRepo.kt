@@ -6,5 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 interface SessionsRepo {
     val sessions: StateFlow<List<SessionInfo>>
     fun addSession(session: SessionInfo)
+    fun addAll(sessions: List<SessionInfo>)
     fun removeSession(sessionId: Int)
+    fun clear()
 }

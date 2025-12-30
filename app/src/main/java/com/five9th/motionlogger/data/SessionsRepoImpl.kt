@@ -15,9 +15,20 @@ class SessionsRepoImpl : SessionsRepo {
         _sessions.update { it + session }
     }
 
+    override fun addAll(sessions: List<SessionInfo>) {
+        _sessions.update { current ->
+            (current + sessions)
+                .distinctBy { it.id } // avoid duplicates (by id)
+        }
+    }
+
     override fun removeSession(sessionId: Int) {
         _sessions.update { list ->
             list.filterNot { it.id == sessionId }
         }
+    }
+
+    override fun clear() {
+        _sessions.value = emptyList()
     }
 }

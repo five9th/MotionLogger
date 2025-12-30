@@ -19,7 +19,7 @@ import com.five9th.motionlogger.domain.entities.SessionInfo
 import com.five9th.motionlogger.domain.usecases.GetLastIdUseCase
 import com.five9th.motionlogger.domain.usecases.ObserveSensorsUseCase
 import com.five9th.motionlogger.domain.usecases.SaveLastIdUseCase
-import com.five9th.motionlogger.domain.usecases.SaveSamplesUseCase
+import com.five9th.motionlogger.domain.usecases.SaveSessionUseCase
 import com.five9th.motionlogger.domain.usecases.ObserveCollectingStateUseCase
 import com.five9th.motionlogger.domain.usecases.StartCollectUseCase
 import com.five9th.motionlogger.domain.usecases.StopCollectUseCase
@@ -61,7 +61,7 @@ class SensorCollectionService : Service(), ISensorCollector {
     @Inject lateinit var startCollectUseCase: StartCollectUseCase
     @Inject lateinit var stopCollectUseCase: StopCollectUseCase
 
-    @Inject lateinit var saveSamplesUseCase: SaveSamplesUseCase
+    @Inject lateinit var saveSessionUseCase: SaveSessionUseCase
 
     @Inject lateinit var saveLastIdUseCase: SaveLastIdUseCase
     @Inject lateinit var getLastIdUseCase: GetLastIdUseCase
@@ -260,7 +260,7 @@ class SensorCollectionService : Service(), ISensorCollector {
         Log.d(tag, "Saving session #${session.id} (${session.samples.size} samples).")
 
         return scope.launch {
-            saveSamplesUseCase(session)
+            saveSessionUseCase(session)
         }
     }
 
