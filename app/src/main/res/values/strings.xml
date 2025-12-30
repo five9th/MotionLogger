@@ -20,7 +20,7 @@
     <string name="collecting_sensor_data">Collecting Sensor Data</string>
     <string name="notif_content_text">%1$s • Samples: %2$d</string>
     <string name="session">session</string>
-    <string name="duration_h_min_sec">%1$d h, %2$d min, %3$d sec.</string>
-    <string name="duration_min_sec">%1$d min, %2$d sec.</string>
-    <string name="duration_sec">%1$d sec.</string>
+    <string name="duration_h_min_sec">%1$d h, %2$d min, %3$d sec</string>
+    <string name="duration_min_sec">%1$d min, %2$d sec</string>
+    <string name="duration_sec">%1$d sec</string>
 </resources>

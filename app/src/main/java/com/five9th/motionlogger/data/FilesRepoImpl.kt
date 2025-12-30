@@ -53,11 +53,7 @@ class FilesRepoImpl @Inject constructor (
 
     override suspend fun getSavedSessions(): List<SessionInfo> {
         // TODO: read actual files
-        return listOf(
-            SessionInfo(  // test dump
-                123, 65, 3700
-            )
-        )
+        return listOf()
     }
 
     override suspend fun removeSession(sessionId: Int) {

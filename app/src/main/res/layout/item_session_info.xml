@@ -42,9 +42,9 @@
                 android:layout_height="wrap_content"
 
                 android:layout_marginHorizontal="4dp"
-                android:layout_gravity="end"
+                android:layout_gravity="start"
 
-                tools:text="001"
+                tools:text="12"
                 android:textSize="32sp"/>
         </FrameLayout>
 

@@ -25,19 +25,16 @@ import javax.inject.Inject
 
 
 // TODO: load samples to current_session.csv every few minutes
-// TODO: display list of recorded sessions
 
 @HiltViewModel
 class MainViewModel @Inject constructor (
     private val getSensorsInfoUseCase: GetSensorsInfoUseCase,
     private val reloadSavedSessionsUseCase: ReloadSavedSessionsUseCase,
-    private val observeSessionListUseCase: ObserveSessionListUseCase,
+    observeSessionListUseCase: ObserveSessionListUseCase,
     application: Application
 ) : AndroidViewModel(application) {
 
     private val tag = "MainViewModel"
-
-    // TODO: maintain sessions list: ArrayList<SessionInfo>
 
     // TODO: maybe ViewModel should not interact with a service directly
     private var service: SensorCollectionService? = null
