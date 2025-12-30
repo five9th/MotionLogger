@@ -20,7 +20,7 @@ import com.five9th.motionlogger.domain.usecases.GetLastIdUseCase
 import com.five9th.motionlogger.domain.usecases.ObserveSensorsUseCase
 import com.five9th.motionlogger.domain.usecases.SaveLastIdUseCase
 import com.five9th.motionlogger.domain.usecases.SaveSamplesUseCase
-import com.five9th.motionlogger.domain.repos.SensorsRepo
+import com.five9th.motionlogger.domain.usecases.ObserveCollectingStateUseCase
 import com.five9th.motionlogger.domain.usecases.StartCollectUseCase
 import com.five9th.motionlogger.domain.usecases.StopCollectUseCase
 import com.five9th.motionlogger.domain.utils.TimeFormatHelper
@@ -55,7 +55,7 @@ class SensorCollectionService : Service(), ISensorCollector {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     // ---- Repo and Use Cases ----
-    @Inject lateinit var sensorsRepo: SensorsRepo
+    @Inject lateinit var observeCollectingStateUseCase: ObserveCollectingStateUseCase
 
     @Inject lateinit var observeSensorsUseCase: ObserveSensorsUseCase
     @Inject lateinit var startCollectUseCase: StartCollectUseCase
@@ -109,7 +109,7 @@ class SensorCollectionService : Service(), ISensorCollector {
         sensorDataSF = observeSensorsUseCase()
             .stateIn(scope, SharingStarted.WhileSubscribed(), null)
 
-        isCollectingSF = sensorsRepo.isCollecting
+        isCollectingSF = observeCollectingStateUseCase()
     }
 
     private fun initNotification() {
