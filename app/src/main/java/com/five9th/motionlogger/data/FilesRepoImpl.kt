@@ -2,7 +2,7 @@ package com.five9th.motionlogger.data
 
 import android.app.Application
 import com.five9th.motionlogger.domain.entities.CollectingSession
-import com.five9th.motionlogger.domain.usecases.FilesRepo
+import com.five9th.motionlogger.domain.repos.FilesRepo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedWriter

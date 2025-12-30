@@ -1,4 +1,4 @@
-package com.five9th.motionlogger.domain.usecases
+package com.five9th.motionlogger.domain.repos
 
 import com.five9th.motionlogger.domain.entities.SensorSample
 import com.five9th.motionlogger.domain.entities.SensorsInfo

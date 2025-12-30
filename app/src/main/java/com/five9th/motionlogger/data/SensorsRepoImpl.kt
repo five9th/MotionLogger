@@ -8,7 +8,7 @@ import android.hardware.SensorManager
 import android.util.Log
 import com.five9th.motionlogger.domain.entities.SensorSample
 import com.five9th.motionlogger.domain.entities.SensorsInfo
-import com.five9th.motionlogger.domain.usecases.SensorsRepo
+import com.five9th.motionlogger.domain.repos.SensorsRepo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

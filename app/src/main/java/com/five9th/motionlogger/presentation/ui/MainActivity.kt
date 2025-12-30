@@ -39,9 +39,14 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        initAdapter()
         initViewModel()
         setListeners()
         collectFlows()
+    }
+
+    private fun initAdapter() {
+        //todo
     }
 
     private fun initViewModel() {

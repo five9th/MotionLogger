@@ -20,7 +20,7 @@ import com.five9th.motionlogger.domain.usecases.GetLastIdUseCase
 import com.five9th.motionlogger.domain.usecases.ObserveSensorsUseCase
 import com.five9th.motionlogger.domain.usecases.SaveLastIdUseCase
 import com.five9th.motionlogger.domain.usecases.SaveSamplesUseCase
-import com.five9th.motionlogger.domain.usecases.SensorsRepo
+import com.five9th.motionlogger.domain.repos.SensorsRepo
 import com.five9th.motionlogger.domain.usecases.StartCollectUseCase
 import com.five9th.motionlogger.domain.usecases.StopCollectUseCase
 import com.five9th.motionlogger.domain.utils.TimeFormatHelper
