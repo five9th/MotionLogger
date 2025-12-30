@@ -10,11 +10,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.five9th.motionlogger.domain.entities.SensorsInfo
+import com.five9th.motionlogger.domain.entities.SessionInfo
 import com.five9th.motionlogger.domain.usecases.GetSensorsInfoUseCase
+import com.five9th.motionlogger.domain.usecases.ObserveSessionListUseCase
+import com.five9th.motionlogger.domain.usecases.ReloadSavedSessionsUseCase
 import com.five9th.motionlogger.presentation.uimodel.CollectionStats
 import com.five9th.motionlogger.presentation.service.SensorCollectionService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -26,6 +30,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor (
     private val getSensorsInfoUseCase: GetSensorsInfoUseCase,
+    private val reloadSavedSessionsUseCase: ReloadSavedSessionsUseCase,
+    private val observeSessionListUseCase: ObserveSessionListUseCase,
     application: Application
 ) : AndroidViewModel(application) {
 
@@ -48,6 +54,8 @@ class MainViewModel @Inject constructor (
         CollectionStats(0L, 0)
     )
     val collectionStatsSF = _collectionStatsSF.asStateFlow()
+
+    val sessionListSF: StateFlow<List<SessionInfo>> = observeSessionListUseCase()
 
     // ---- Bind to Service ----
     private val serviceConnection = object : ServiceConnection {
@@ -104,8 +112,16 @@ class MainViewModel @Inject constructor (
     }
 
 
+    // ---- Public methods for Activity ----
+
     fun getSensorsInfo() {
         _sensorsInfoLD.value = getSensorsInfoUseCase()
+    }
+
+    fun reloadSavedSessions() {
+        viewModelScope.launch {
+            reloadSavedSessionsUseCase()
+        }
     }
 
     fun startCollect() {

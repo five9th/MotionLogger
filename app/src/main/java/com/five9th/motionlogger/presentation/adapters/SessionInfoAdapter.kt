@@ -18,8 +18,11 @@ class SessionInfoAdapter(
     ) : RecyclerView.ViewHolder(binding.root)
     {
         fun bind(item: SessionItem) {
-            //todo
             binding.tvSessionId.text = item.number
+            binding.tvKeyWord.text = item.keyWord
+            binding.tvStartTime.text = item.startTime
+            binding.tvStopTime.text = item.stopTime
+            binding.tvSessionDuration.text = item.duration
         }
     }
 

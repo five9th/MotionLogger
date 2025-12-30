@@ -10,8 +10,11 @@ import androidx.lifecycle.lifecycleScope
 import com.five9th.motionlogger.R
 import com.five9th.motionlogger.databinding.ActivityMainBinding
 import com.five9th.motionlogger.domain.entities.SensorsInfo
+import com.five9th.motionlogger.domain.entities.SessionInfo
 import com.five9th.motionlogger.domain.utils.TimeFormatHelper
+import com.five9th.motionlogger.presentation.adapters.SessionInfoAdapter
 import com.five9th.motionlogger.presentation.uimodel.CollectionStats
+import com.five9th.motionlogger.presentation.uimodel.UiMapper
 import com.five9th.motionlogger.presentation.vm.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -25,6 +28,8 @@ class MainActivity : AppCompatActivity() {
     private val mainViewModel: MainViewModel by viewModels()
 
     private lateinit var binding: ActivityMainBinding
+
+    private lateinit var adapter: SessionInfoAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,12 +51,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initAdapter() {
-        //todo
+        adapter = SessionInfoAdapter(UiMapper(this))
+        binding.rvSessionList.adapter = adapter
     }
 
     private fun initViewModel() {
         mainViewModel.sensorsInfoLD.observe(this, ::onSensorsInfoChanged)
+
         mainViewModel.getSensorsInfo()
+        mainViewModel.reloadSavedSessions()
     }
 
     private fun setListeners() { // TODO: check for notification permission if Android 13+
@@ -71,6 +79,10 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             mainViewModel.collectionStatsSF.collect(::onCollectionStatsChanged)
+        }
+
+        lifecycleScope.launch {
+            mainViewModel.sessionListSF.collect(::onSessionListChanged)
         }
     }
 
@@ -98,5 +110,9 @@ class MainActivity : AppCompatActivity() {
         binding.tvTimer.text = TimeFormatHelper.elapsedMillisToMmSs(stats.elapsedMillis)
         binding.tvSamplesCount.text = String.format(
             Locale.getDefault(), "%d", stats.samplesCount)
+    }
+
+    private fun onSessionListChanged(list: List<SessionInfo>) {
+        adapter.submitList(list)
     }
 }
