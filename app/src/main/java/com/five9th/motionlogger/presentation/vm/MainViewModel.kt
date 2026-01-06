@@ -30,7 +30,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor (
     private val getSensorsInfoUseCase: GetSensorsInfoUseCase,
     private val reloadSavedSessionsUseCase: ReloadSavedSessionsUseCase,
-    observeSessionListUseCase: ObserveSessionListUseCase,
+    private val observeSessionListUseCase: ObserveSessionListUseCase,
     application: Application
 ) : AndroidViewModel(application) {
 
@@ -52,7 +52,17 @@ class MainViewModel @Inject constructor (
     )
     val collectionStatsSF = _collectionStatsSF.asStateFlow()
 
-    val sessionListSF: StateFlow<List<SessionInfo>> = observeSessionListUseCase()
+    private val _sessionListSF = MutableStateFlow<List<SessionInfo>>(listOf())
+    val sessionListSF: StateFlow<List<SessionInfo>> = _sessionListSF.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            observeSessionListUseCase().collect { list ->
+                // maintain order by session id
+                _sessionListSF.value = list.sortedBy { session -> session.id }
+            }
+        }
+    }
 
     // ---- Bind to Service ----
     private val serviceConnection = object : ServiceConnection {
@@ -70,6 +80,12 @@ class MainViewModel @Inject constructor (
         }
     }
 
+    // after serviceConnection got initialized
+    init {
+        // check if the service is running (in case activity was finished and recreated)
+        bindToService()
+    }
+
     private fun collectServiceFlows() {
         if (!isBound) return
 
@@ -84,12 +100,6 @@ class MainViewModel @Inject constructor (
                 _collectionStatsSF.value = it
             }
         }
-    }
-
-    // after serviceConnection got initialized
-    init {
-        // check if the service is running (in case activity was finished and recreated)
-        bindToService()
     }
 
     /** If Service is already bound or doesn't exist - nothing happens */
