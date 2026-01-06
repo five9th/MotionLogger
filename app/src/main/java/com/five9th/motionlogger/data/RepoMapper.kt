@@ -1,11 +1,13 @@
 package com.five9th.motionlogger.data
 
 import com.five9th.motionlogger.data.FilesRepoImpl.Companion.FILENAME_PATTERN
+import com.five9th.motionlogger.data.FilesRepoImpl.Companion.FILENAME_REGEX
 import com.five9th.motionlogger.domain.entities.CollectingSession
 import com.five9th.motionlogger.domain.entities.SessionInfo
 import com.five9th.motionlogger.domain.utils.TimeFormatHelper
 
 class RepoMapper {
+
     fun mapDomainToFileModel(session: CollectingSession): SessionCSVModel {
         return SessionCSVModel(
             makeFileName(session.info),
@@ -20,5 +22,23 @@ class RepoMapper {
         val stop = TimeFormatHelper.timeOfDaySecondsToHhMmSs(sessionInfo.stopTimeInSeconds)
 
         return FILENAME_PATTERN.format(id, start, stop)
+    }
+
+    fun parseSessionFilename(name: String): SessionInfo? {
+        val match = FILENAME_REGEX.matchEntire(name) ?: return null
+
+        val (idStr, startStr, stopStr) = match.destructured
+
+        val id = idStr.toIntOrNull()
+        val start = TimeFormatHelper.hhMmSsToSeconds(startStr)
+        val stop = TimeFormatHelper.hhMmSsToSeconds(stopStr)
+
+        if (id == null || start < 0 || stop < 0) return null
+
+        return SessionInfo(id, start, stop)
+    }
+
+    fun parseFilenameListToSessionInfoList(filenames: List<String>): List<SessionInfo> {
+        return filenames.mapNotNull { filename -> parseSessionFilename(filename) }
     }
 }

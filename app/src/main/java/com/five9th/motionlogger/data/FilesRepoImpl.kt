@@ -18,7 +18,9 @@ class FilesRepoImpl @Inject constructor (
         private const val SESSIONS_DIR = "sessions"
         private const val LAST_ID_FILE = "last_session_id.txt"
 
-        const val FILENAME_PATTERN = "session-%03d-%s-%s.csv" // session-1-12:35:42-12:40:21.csv
+        const val FILENAME_PATTERN = "session-%03d-%s-%s.csv" // session-001-12:35:42-12:40:21.csv
+        val FILENAME_REGEX =
+            Regex("""session-(\d+)-(.+)-(.+)\.csv""")
     }
 
     private val mapper = RepoMapper()
@@ -52,8 +54,19 @@ class FilesRepoImpl @Inject constructor (
     }
 
     override suspend fun getSavedSessions(): List<SessionInfo> {
-        // TODO: read actual files
-        return listOf()
+        // get list of filenames
+        val files: List<String> = getSessionsDir().listFiles { file ->
+            file.isFile
+        }?.map { file -> file.name } ?: listOf()
+
+        // retrieve SessionInfo from filenames
+        val sessions = mapper.parseFilenameListToSessionInfoList(files)
+
+        return sessions
+    }
+
+    override suspend fun getSession(sessionId: Int): CollectingSession {
+        TODO("Not yet implemented")
     }
 
     override suspend fun removeSession(sessionId: Int) {

@@ -1,6 +1,8 @@
 package com.five9th.motionlogger.domain.utils
 
 import java.text.SimpleDateFormat
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -42,6 +44,19 @@ class TimeFormatHelper {
                 minutes = (seconds % 3600) / 60,
                 seconds = seconds % 60
             )
+        }
+
+        /** returns seconds of day or -1 if failed */
+        fun hhMmSsToSeconds(timeStr: String): Int {
+            val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+            try {
+                val time = LocalTime.parse(timeStr, formatter)
+                return time.toSecondOfDay()
+            }
+            catch (e: Exception) {
+                return -1
+            }
         }
 
         data class TimeBundle(
