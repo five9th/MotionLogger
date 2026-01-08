@@ -26,6 +26,8 @@ class SessionInfoAdapter(
         }
     }
 
+    var onClickListener: ((SessionInfo) -> Unit)? = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SessionViewHolder {
         val binding = ItemSessionInfoBinding.inflate(
             LayoutInflater.from(parent.context),
@@ -37,8 +39,13 @@ class SessionInfoAdapter(
 
     override fun onBindViewHolder(holder: SessionViewHolder, position: Int) {
         val item = getItem(position)
+
         holder.bind(
             mapper.mapDomainToUiModel(item)
         )
+
+        holder.itemView.setOnClickListener {
+            onClickListener?.invoke(item)
+        }
     }
 }

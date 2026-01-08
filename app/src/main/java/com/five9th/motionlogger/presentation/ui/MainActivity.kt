@@ -1,6 +1,7 @@
 package com.five9th.motionlogger.presentation.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -52,6 +53,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun initAdapter() {
         adapter = SessionInfoAdapter(UiMapper(this))
+        adapter.onClickListener = ::onItemClick
+
         binding.rvSessionList.adapter = adapter
     }
 
@@ -114,5 +117,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun onSessionListChanged(list: List<SessionInfo>) {
         adapter.submitList(list)
+    }
+
+    private fun onItemClick(item: SessionInfo) {
+        // todo: launch activity
+        Log.d(tag, "Item click: $item")
     }
 }
