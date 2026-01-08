@@ -1,7 +1,9 @@
 package com.five9th.motionlogger.data
 
 import android.app.Application
+import android.util.Log
 import com.five9th.motionlogger.domain.entities.CollectingSession
+import com.five9th.motionlogger.domain.entities.SensorSample
 import com.five9th.motionlogger.domain.entities.SessionInfo
 import com.five9th.motionlogger.domain.repos.FilesRepo
 import kotlinx.coroutines.Dispatchers
@@ -65,9 +67,76 @@ class FilesRepoImpl @Inject constructor (
         return sessions
     }
 
-    override suspend fun getSession(sessionId: Int): CollectingSession {
-        TODO("Not yet implemented")
+    override suspend fun getSession(sessionId: Int): CollectingSession? {
+        val file = getFileBySessionId(sessionId) ?: return null
+        val csvModel = readSessionFromCsv(file)
+
+        return mapper.mapFileModelToDomain(csvModel)
     }
+
+    private fun getFileBySessionId(sessionId: Int): File? {
+        // get list of files
+        val files: Array<File> = getSessionsDir().listFiles { file ->
+            file.isFile
+        } ?: return null
+
+        for (file in files) { // session-001-12:35:42-12:40:21.csv
+            val parts = file.name.split('-')
+            if (parts.size > 1) {
+                val id = parts[1].toIntOrNull() ?: return null
+
+                if (id == sessionId) return file
+            }
+        }
+
+        return null
+    }
+
+    private fun readSessionFromCsv(file: File): SessionCSVModel {
+        val samples = mutableListOf<SensorSample>()
+
+        var headerStr: String
+
+        file.bufferedReader().use { reader ->
+
+            headerStr = reader.readLine() // column names
+
+            reader.lineSequence().forEach { line ->
+
+                if (line.isBlank()) return@forEach
+
+                // for now it's hardcoded: timestamp, acc, gyro, position
+                val tokens = line.split(",")
+
+                // basic safety check
+                if (tokens.size < 10) return@forEach
+
+                try {
+                    samples += SensorSample(
+                        timestampMs = tokens[0].toLong(),
+                        accX = tokens[1].toFloat(),
+                        accY = tokens[2].toFloat(),
+                        accZ = tokens[3].toFloat(),
+                        gyroX = tokens[4].toFloat(),
+                        gyroY = tokens[5].toFloat(),
+                        gyroZ = tokens[6].toFloat(),
+                        roll = tokens[7].toFloat(),
+                        pitch = tokens[8].toFloat(),
+                        yaw = tokens[9].toFloat()
+                    )
+                } catch (ex: NumberFormatException) {
+                    Log.d("FilesRepo", "Failed to parse line: '$line'")
+                }
+            }
+        }
+
+        return SessionCSVModel(
+            filename = file.name,
+            columns = headerStr.split(','),
+            samples = samples
+        )
+    }
+
 
     override suspend fun removeSession(sessionId: Int) {
         TODO("Not yet implemented")

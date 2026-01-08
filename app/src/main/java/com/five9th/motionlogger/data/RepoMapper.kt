@@ -16,6 +16,12 @@ class RepoMapper {
         )
     }
 
+    fun mapFileModelToDomain(csvModel: SessionCSVModel): CollectingSession? {
+        val info = parseSessionFilename(csvModel.filename) ?: return null
+
+        return CollectingSession(info, csvModel.samples)
+    }
+
     private fun makeFileName(sessionInfo: SessionInfo): String {
         val id = sessionInfo.id
         val start = TimeFormatHelper.timeOfDaySecondsToHhMmSs(sessionInfo.startTimeInSeconds)
@@ -24,6 +30,11 @@ class RepoMapper {
         return FILENAME_PATTERN.format(id, start, stop)
     }
 
+    /**
+     * Retrieves values stored in a filename.
+     *
+     * [name] - filename with extension.
+     * */
     fun parseSessionFilename(name: String): SessionInfo? {
         val match = FILENAME_REGEX.matchEntire(name) ?: return null
 
