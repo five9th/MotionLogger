@@ -120,7 +120,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onItemClick(item: SessionInfo) {
-        // todo: launch activity
         Log.d(tag, "Item click: $item")
+
+        val intent = SessionAnalysisActivity.newIntent(this, item.id)
+        startActivity(intent)
     }
 }
