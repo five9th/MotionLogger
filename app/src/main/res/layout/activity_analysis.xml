@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".presentation.ui.SessionAnalysisActivity">
+    tools:context=".presentation.ui.AnalysisActivity">
 
     <GridLayout
         android:id="@+id/gl_session_info"
@@ -56,7 +56,7 @@
             android:text="@string/samples_label"
             />
         <TextView
-            android:id="@+id/tv_samples_count"
+            android:id="@+id/tv_sample_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
 

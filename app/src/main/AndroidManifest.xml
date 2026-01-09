@@ -18,7 +18,7 @@
         android:theme="@style/Theme.MotionLogger"
         tools:targetApi="31">
         <activity
-            android:name=".presentation.ui.SessionAnalysisActivity"
+            android:name=".presentation.ui.AnalysisActivity"
             android:exported="false" />
         <activity
             android:name=".presentation.ui.MainActivity"

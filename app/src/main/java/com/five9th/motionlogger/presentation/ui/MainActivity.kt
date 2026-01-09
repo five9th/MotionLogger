@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun onCollectionStatsChanged(stats: CollectionStats) {
         binding.tvTimer.text = TimeFormatHelper.elapsedMillisToMmSs(stats.elapsedMillis)
-        binding.tvSamplesCount.text = String.format(
+        binding.tvSampleCount.text = String.format(
             Locale.getDefault(), "%d", stats.samplesCount)
     }
 
@@ -122,7 +122,7 @@ class MainActivity : AppCompatActivity() {
     private fun onItemClick(item: SessionInfo) {
         Log.d(tag, "Item click: $item")
 
-        val intent = SessionAnalysisActivity.newIntent(this, item.id)
+        val intent = AnalysisActivity.newIntent(this, item.id)
         startActivity(intent)
     }
 }
