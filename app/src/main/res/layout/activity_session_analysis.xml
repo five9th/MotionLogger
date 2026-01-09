@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".presentation.ui.SessionAnalysisActivity">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/tv_session_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:textSize="28sp"
+
+            tools:text="Session: 1"
+            />
+
+        <TextView
+            android:id="@+id/tv_session_keyword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+
+            android:textSize="22sp"
+
+            tools:text="route_1"
+            />
+
+        <TextView
+            android:id="@+id/tv_samples_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:textSize="18sp"
+
+            tools:text="samples: 12345"
+            />
+
+        <TextView
+            android:id="@+id/tv_session_duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:textSize="18sp"
+
+            tools:text="duration: 1 h, 3 min, 56 sec"
+            />
+
+        <TextView
+            android:id="@+id/tv_start_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:textSize="18sp"
+
+            tools:text="start: 03:12:45"
+            />
+
+        <TextView
+            android:id="@+id/tv_stop_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:textSize="18sp"
+
+            tools:text="stop: 03:13:24"
+            />
+
+        <TextView
+            android:id="@+id/tv_output"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+
+            android:textSize="18sp"
+
+            tools:text="other output..."
+            />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,8 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
@@ -19,9 +18,12 @@
         android:theme="@style/Theme.MotionLogger"
         tools:targetApi="31">
         <activity
+            android:name=".presentation.ui.SessionAnalysisActivity"
+            android:exported="false" />
+        <activity
             android:name=".presentation.ui.MainActivity"
-            android:launchMode="singleTop"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -29,7 +31,8 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".presentation.service.SensorCollectionService"
+        <service
+            android:name=".presentation.service.SensorCollectionService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
     </application>
