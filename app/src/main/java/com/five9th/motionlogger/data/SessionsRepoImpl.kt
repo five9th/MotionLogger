@@ -12,6 +12,14 @@ class SessionsRepoImpl @Inject constructor() : SessionsRepo {
     private val _sessions = MutableStateFlow<List<SessionInfo>>(emptyList())
     override val sessions: StateFlow<List<SessionInfo>> = _sessions
 
+    override fun getSessionInfo(sessionId: Int): SessionInfo? {
+        for (session in sessions.value) {
+            if (session.id == sessionId) return session
+        }
+
+        return null
+    }
+
     override fun addSession(session: SessionInfo) {
         _sessions.update { it + session }
     }
