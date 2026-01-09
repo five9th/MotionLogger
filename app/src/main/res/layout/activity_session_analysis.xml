@@ -7,13 +7,24 @@
     android:layout_height="match_parent"
     tools:context=".presentation.ui.SessionAnalysisActivity">
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+    <GridLayout
+        android:id="@+id/gl_session_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:columnCount="2"
+        android:padding="4dp">
 
-        android:padding="8dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
 
+            android:textSize="28sp"
+
+            android:text="@string/session"
+            />
         <TextView
             android:id="@+id/tv_session_number"
             android:layout_width="wrap_content"
@@ -21,13 +32,14 @@
 
             android:textSize="28sp"
 
-            tools:text="Session: 1"
+            tools:text="1"
             />
 
         <TextView
             android:id="@+id/tv_session_keyword"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_columnSpan="2"
             android:layout_marginBottom="6dp"
 
             android:textSize="22sp"
@@ -36,15 +48,31 @@
             />
 
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:textSize="18sp"
+
+            android:text="@string/samples_label"
+            />
+        <TextView
             android:id="@+id/tv_samples_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
 
             android:textSize="18sp"
 
-            tools:text="samples: 12345"
+            tools:text="12345"
             />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:textSize="18sp"
+
+            android:text="@string/duration_label"
+            />
         <TextView
             android:id="@+id/tv_session_duration"
             android:layout_width="wrap_content"
@@ -52,9 +80,17 @@
 
             android:textSize="18sp"
 
-            tools:text="duration: 1 h, 3 min, 56 sec"
+            tools:text="1 h, 3 min, 56 sec"
             />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:textSize="18sp"
+
+            android:text="@string/start_label"
+            />
         <TextView
             android:id="@+id/tv_start_time"
             android:layout_width="wrap_content"
@@ -62,9 +98,17 @@
 
             android:textSize="18sp"
 
-            tools:text="start: 03:12:45"
+            tools:text="03:12:45"
             />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:textSize="18sp"
+
+            android:text="@string/stop_label"
+            />
         <TextView
             android:id="@+id/tv_stop_time"
             android:layout_width="wrap_content"
@@ -72,20 +116,24 @@
 
             android:textSize="18sp"
 
-            tools:text="stop: 03:13:24"
+            tools:text="03:13:24"
             />
 
-        <TextView
-            android:id="@+id/tv_output"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+    </GridLayout>
 
-            android:textSize="18sp"
+    <TextView
+        android:id="@+id/tv_output"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
 
-            tools:text="other output..."
-            />
+        app:layout_constraintTop_toBottomOf="@id/gl_session_info"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="10dp"
 
-    </LinearLayout>
+        android:textSize="18sp"
+
+        tools:text="other output..."
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

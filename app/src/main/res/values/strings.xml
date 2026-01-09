@@ -14,7 +14,7 @@
     <string name="stop">Stop</string>
     <string name="collecting">Collecting…</string>
     <string name="stopped">Stopped</string>
-    <string name="samples">samples:</string>
+    <string name="samples_label">samples:</string>
     <string name="notif_channel_description">Shows ongoing sensor data collection</string>
     <string name="notif_channel_name">Collecting sensor data</string>
     <string name="collecting_sensor_data">Collecting Sensor Data</string>
@@ -23,4 +23,7 @@
     <string name="duration_h_min_sec">%1$d h, %2$d min, %3$d sec</string>
     <string name="duration_min_sec">%1$d min, %2$d sec</string>
     <string name="duration_sec">%1$d sec</string>
+    <string name="duration_label">duration:</string>
+    <string name="start_label">start:</string>
+    <string name="stop_label">stop:</string>
 </resources>
