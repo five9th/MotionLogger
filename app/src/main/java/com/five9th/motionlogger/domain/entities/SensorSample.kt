@@ -1,5 +1,6 @@
 package com.five9th.motionlogger.domain.entities
 
+// TODO: use schema-base approach instead
 data class SensorSample(
     val timestampMs: Long,
     val accX: Float, val accY: Float, val accZ: Float,
