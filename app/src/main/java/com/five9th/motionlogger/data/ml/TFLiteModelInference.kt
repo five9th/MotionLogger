@@ -8,8 +8,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class TFLiteModelInference(
+@Singleton
+class TFLiteModelInference @Inject constructor (
     provider: ModelFileProvider
 ) : ModelInference {
 
@@ -23,11 +26,13 @@ class TFLiteModelInference(
 
     override suspend fun run(window: SampleWindow): ModelOutput {
 
-        val inputBuffer = mapDomainToModelInput(window)  // shape (1, 128, 9)
-        val outputBuffer = createOutputBuffer()    // shape (1, 6)
+        val outputBuffer: Array<FloatArray>
 
         withContext(Dispatchers.Default) {
             mutex.withLock {
+                val inputBuffer = mapDomainToModelInput(window)  // shape (1, 128, 9)
+                outputBuffer = createOutputBuffer()    // shape (1, 6)
+
                 interpreter.run(inputBuffer, outputBuffer)
             }
         }
