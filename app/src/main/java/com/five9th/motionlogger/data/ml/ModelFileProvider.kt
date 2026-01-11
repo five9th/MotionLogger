@@ -23,7 +23,7 @@ class ModelFileProvider @Inject constructor (
         val input = interpreter.getInputTensor(0).shape()
         val output = interpreter.getOutputTensor(0).shape()
 
-        Log.d(tag, "Model loaded, shapes: input = ${input.joinToString()}; output = ${output.joinToString()};")
+        Log.d(tag, "Model loaded, shapes: input = (${input.joinToString()}); output = (${output.joinToString()});")
 
         return interpreter
     }

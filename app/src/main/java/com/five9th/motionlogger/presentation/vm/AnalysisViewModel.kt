@@ -6,8 +6,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.five9th.motionlogger.domain.entities.CollectingSession
+import com.five9th.motionlogger.domain.entities.SampleWindow
+import com.five9th.motionlogger.domain.entities.SensorSample
 import com.five9th.motionlogger.domain.usecases.GetSessionInfoUseCase
 import com.five9th.motionlogger.domain.usecases.GetSessionUseCase
+import com.five9th.motionlogger.domain.usecases.PredictActivityUseCase
 import com.five9th.motionlogger.presentation.uimodel.SessionItem
 import com.five9th.motionlogger.presentation.uimodel.UiMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +24,7 @@ import javax.inject.Inject
 class AnalysisViewModel @Inject constructor (
     private val getSessionInfoUseCase: GetSessionInfoUseCase,
     private val getSessionUseCase: GetSessionUseCase,
+    private val predictActivityUseCase: PredictActivityUseCase,
     savedStateHandle: SavedStateHandle,
     application: Application
 ) : AndroidViewModel(application) {
@@ -55,7 +59,7 @@ class AnalysisViewModel @Inject constructor (
         if (sessionId == ID_UNDEFINED) showError()
         else {
             loadSessionInfo()
-            loadSession()
+            loadSessionAndAnalyse()
         }
     }
 
@@ -70,15 +74,39 @@ class AnalysisViewModel @Inject constructor (
         _sessionInfoSF.value = uiModel
     }
 
-    private fun loadSession() {
+    private fun loadSessionAndAnalyse() {
         viewModelScope.launch {
             session = getSessionUseCase(sessionId)
 
             session?.let {
+                // display samples count
                 _sampleCountSF.value = String.format(
                     Locale.getDefault(), "%d", it.samples.size)
+
+                // run analysis
+                runAnalysis(it)
             }
         }
+    }
+
+    private suspend fun runAnalysis(session: CollectingSession) {
+//        val testDump = Array<FloatArray>(128) { FloatArray(9) {0f} }  // shape (128, 9), filled with zeros
+
+        val testWindow = SampleWindow(
+            List(128) {
+                SensorSample(0L, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f)
+            }
+        )
+
+        val result = predictActivityUseCase(testWindow)
+
+        fun roundValue(number: Float): String {
+            return String.format(Locale.getDefault() ,"%.2f", number)
+        }
+
+        // display result
+        val text = "Prediction: ${result.scores.joinToString(transform = ::roundValue)}"
+        _messageSF.value = text
     }
 
 
