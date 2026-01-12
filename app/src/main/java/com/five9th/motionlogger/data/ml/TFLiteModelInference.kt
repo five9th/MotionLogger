@@ -20,7 +20,7 @@ class TFLiteModelInference @Inject constructor (
         provider.getInterpreter() // must be called off main thread
     }
 
-    // TODO: interpreter.close()
+    // TODO: redesign `interpreter` property. Call interpreter.close() when MainViewModel is cleared
 
     private val mutex = Mutex()
 

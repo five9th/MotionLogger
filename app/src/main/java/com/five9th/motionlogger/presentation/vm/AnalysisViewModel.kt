@@ -6,11 +6,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.five9th.motionlogger.domain.entities.CollectingSession
-import com.five9th.motionlogger.domain.entities.SampleWindow
-import com.five9th.motionlogger.domain.entities.SensorSample
+import com.five9th.motionlogger.domain.usecases.AnalyzeSessionUseCase
 import com.five9th.motionlogger.domain.usecases.GetSessionInfoUseCase
 import com.five9th.motionlogger.domain.usecases.GetSessionUseCase
-import com.five9th.motionlogger.domain.usecases.PredictActivityUseCase
 import com.five9th.motionlogger.presentation.uimodel.SessionItem
 import com.five9th.motionlogger.presentation.uimodel.UiMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,12 +17,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 @HiltViewModel
 class AnalysisViewModel @Inject constructor (
     private val getSessionInfoUseCase: GetSessionInfoUseCase,
     private val getSessionUseCase: GetSessionUseCase,
-    private val predictActivityUseCase: PredictActivityUseCase,
+    private val analyzeSessionUseCase: AnalyzeSessionUseCase,
     savedStateHandle: SavedStateHandle,
     application: Application
 ) : AndroidViewModel(application) {
@@ -89,23 +88,22 @@ class AnalysisViewModel @Inject constructor (
         }
     }
 
+    // this whole thing is temporary for testing (todo)
     private suspend fun runAnalysis(session: CollectingSession) {
-//        val testDump = Array<FloatArray>(128) { FloatArray(9) {0f} }  // shape (128, 9), filled with zeros
 
-        val testWindow = SampleWindow(
-            List(128) {
-                SensorSample(0L, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f)
-            }
-        )
+        val activityLabels = arrayOf("dws", "ups", "wlk", "jog", "std", "sit") // <-- this needs to be centralised
 
-        val result = predictActivityUseCase(testWindow)
+        val result = analyzeSessionUseCase(session)
+        val percentages = result.getPercentages()
+        Log.d(tag, "keys: ${percentages.keys}")
 
-        fun roundValue(number: Float): String {
-            return String.format(Locale.getDefault() ,"%.2f", number)
+        var text = ""
+
+        for ((act, percent) in percentages) {
+            text += "${activityLabels[act]}: ${(percent * 100).roundToInt()}%\n"
         }
 
         // display result
-        val text = "Prediction: ${result.scores.joinToString(transform = ::roundValue)}"
         _messageSF.value = text
     }
 
