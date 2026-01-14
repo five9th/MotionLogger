@@ -3,6 +3,7 @@ package com.five9th.motionlogger.presentation.ui
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -53,6 +54,10 @@ class AnalysisActivity : AppCompatActivity() {
         lifecycleScope.launch {
             viewModel.messageSF.collect(::onMessageChanged)
         }
+
+        lifecycleScope.launch {
+            viewModel.analysisResultSF.collect(::onAnalysisResultChanged)
+        }
     }
 
     private fun onSessionInfoChanged(item: SessionItem) {
@@ -68,7 +73,14 @@ class AnalysisActivity : AppCompatActivity() {
     }
 
     private fun onMessageChanged(message: String) {
-        binding.tvOutput.text = message
+        binding.tvOutputMessage.text = message
+    }
+
+    private fun onAnalysisResultChanged(analysisStr: String) {
+        if (analysisStr.isEmpty()) return
+
+        binding.llAnalysis.visibility = View.VISIBLE
+        binding.tvOutputAnalysis.text = analysisStr
     }
 
 

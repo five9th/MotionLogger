@@ -4,7 +4,10 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
+import com.five9th.motionlogger.R
+import com.five9th.motionlogger.domain.entities.ActivityClass
 import com.five9th.motionlogger.domain.entities.CollectingSession
 import com.five9th.motionlogger.domain.usecases.AnalyzeSessionUseCase
 import com.five9th.motionlogger.domain.usecases.GetSessionInfoUseCase
@@ -49,6 +52,9 @@ class AnalysisViewModel @Inject constructor (
 
     private val _messageSF = MutableStateFlow("")
     val messageSF = _messageSF.asStateFlow()
+
+    private val _analysisResultSF = MutableStateFlow("")
+    val analysisResultSF = _analysisResultSF.asStateFlow()
     // ----------
 
 
@@ -88,22 +94,42 @@ class AnalysisViewModel @Inject constructor (
         }
     }
 
-    // this whole thing is temporary for testing (todo)
-    private suspend fun runAnalysis(session: CollectingSession) {
+    private suspend fun tryRunAnalysis(session: CollectingSession) {
+        try {
+            runAnalysis(session)
+        }
+        catch (e: Exception) {
+            val errText = "Error: ${e.message}"
+            _messageSF.value = errText
+        }
+    }
 
-        val activityLabels = arrayOf("dws", "ups", "wlk", "jog", "std", "sit") // <-- this needs to be centralised
+    private suspend fun runAnalysis(session: CollectingSession) {
 
         val result = analyzeSessionUseCase(session)
         val percentages = result.getPercentages()
 
-        var text = ""
+        var text = ""  // <-- not so great but will do for now
 
         for ((act, percent) in percentages) {
-            text += "${activityLabels[act.value]}: ${(percent * 100).roundToInt()}%\n"
+            text += "${getActivityName(act)}: ${(percent * 100).roundToInt()}%\n"
         }
 
         // display result
-        _messageSF.value = text
+        _analysisResultSF.value = text
+    }
+
+    private fun getActivityName(act: ActivityClass): String {
+        val resId = when (act) {
+            ActivityClass.DOWN_STAIRS -> R.string.activity_dws
+            ActivityClass.UP_STAIRS -> R.string.activity_ups
+            ActivityClass.WALKING -> R.string.activity_wlk
+            ActivityClass.JOGGING -> R.string.activity_jog
+            ActivityClass.STANDING -> R.string.activity_std
+            ActivityClass.SITTING -> R.string.activity_sit
+        }
+
+        return application.getString(resId)
     }
 
 
