@@ -34,7 +34,8 @@ class AnalyzeSessionUseCase @Inject constructor (
                 "samples: ${session.samples.size}; " +
                 "expected windows: ${session.samples.size / 128f}; " +
                 "got windows: ${windows.size}; " +
-                "last window size: ${windows[windows.size - 1].samples.size};")
+                "last window size: ${if (windows.isNotEmpty()) 
+                    windows[windows.size - 1].samples.size else null};")
 
         // 2. Model inference per window
         val results = ArrayList<WindowPrediction>()

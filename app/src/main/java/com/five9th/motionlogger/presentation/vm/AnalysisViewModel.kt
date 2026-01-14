@@ -15,6 +15,7 @@ import com.five9th.motionlogger.domain.usecases.GetSessionUseCase
 import com.five9th.motionlogger.presentation.uimodel.SessionItem
 import com.five9th.motionlogger.presentation.uimodel.UiMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -61,15 +62,19 @@ class AnalysisViewModel @Inject constructor (
     init {
         Log.d(tag, "Session id: $sessionId")
 
-        if (sessionId == ID_UNDEFINED) showError()
+        if (sessionId == ID_UNDEFINED) showError(ErrorType.ID_UNDEFINED)
         else {
             loadSessionInfo()
             loadSessionAndAnalyse()
         }
     }
 
-    private fun showError() {
-        _messageSF.value = "Error: Session ID was not specified."
+    private fun showError(error: ErrorType) {
+        val msg = when (error) {
+            ErrorType.ID_UNDEFINED -> "Error: Session ID was not specified."
+            ErrorType.SESSION_TOO_SHORT -> "Not enough samples."
+        }
+        _messageSF.value = msg
     }
 
     private fun loadSessionInfo() {
@@ -89,7 +94,7 @@ class AnalysisViewModel @Inject constructor (
                     Locale.getDefault(), "%d", it.samples.size)
 
                 // run analysis
-                runAnalysis(it)
+                tryRunAnalysis(it)
             }
         }
     }
@@ -97,6 +102,9 @@ class AnalysisViewModel @Inject constructor (
     private suspend fun tryRunAnalysis(session: CollectingSession) {
         try {
             runAnalysis(session)
+        }
+        catch (e: CancellationException) {
+            throw e // always rethrow
         }
         catch (e: Exception) {
             val errText = "Error: ${e.message}"
@@ -107,6 +115,12 @@ class AnalysisViewModel @Inject constructor (
     private suspend fun runAnalysis(session: CollectingSession) {
 
         val result = analyzeSessionUseCase(session)
+
+        if (result.windowResults.isEmpty()) {
+            showError(ErrorType.SESSION_TOO_SHORT)
+            return
+        }
+
         val percentages = result.getPercentages()
 
         var text = ""  // <-- not so great but will do for now
@@ -132,6 +146,8 @@ class AnalysisViewModel @Inject constructor (
         return application.getString(resId)
     }
 
+
+    private enum class ErrorType {ID_UNDEFINED, SESSION_TOO_SHORT}
 
     companion object {
         const val EXTRA_ID = "extra_id"
