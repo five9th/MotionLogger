@@ -1,6 +1,5 @@
 package com.five9th.motionlogger.domain.entities
 
-typealias ActivityClass = Int
 
 data class SessionAnalysisResult(
     val windowResults: List<WindowPrediction>

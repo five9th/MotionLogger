@@ -95,12 +95,11 @@ class AnalysisViewModel @Inject constructor (
 
         val result = analyzeSessionUseCase(session)
         val percentages = result.getPercentages()
-        Log.d(tag, "keys: ${percentages.keys}")
 
         var text = ""
 
         for ((act, percent) in percentages) {
-            text += "${activityLabels[act]}: ${(percent * 100).roundToInt()}%\n"
+            text += "${activityLabels[act.value]}: ${(percent * 100).roundToInt()}%\n"
         }
 
         // display result

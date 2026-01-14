@@ -1,14 +1,12 @@
 package com.five9th.motionlogger.domain.usecases
 
 import android.util.Log
-import com.five9th.motionlogger.domain.entities.ActivityClass
 import com.five9th.motionlogger.domain.entities.CollectingSession
 import com.five9th.motionlogger.domain.entities.ModelOutput
 import com.five9th.motionlogger.domain.entities.SampleWindow
 import com.five9th.motionlogger.domain.entities.SessionAnalysisResult
 import com.five9th.motionlogger.domain.entities.WindowPrediction
 import com.five9th.motionlogger.domain.repos.ModelInference
-import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 class AnalyzeSessionUseCase @Inject constructor (
@@ -22,7 +20,7 @@ class AnalyzeSessionUseCase @Inject constructor (
     suspend operator fun invoke(
         session: CollectingSession
     ): SessionAnalysisResult {
-        // windowing (128)
+        // 1. Windowing
         val windows = session.samples
             .chunked(WINDOW_SIZE)
             .mapNotNull { list ->
@@ -37,9 +35,8 @@ class AnalyzeSessionUseCase @Inject constructor (
                 "expected windows: ${session.samples.size / 128f}; " +
                 "got windows: ${windows.size}; " +
                 "last window size: ${windows[windows.size - 1].samples.size};")
-        delay(100)
 
-        // model inference per window
+        // 2. Model inference per window
         val results = ArrayList<WindowPrediction>()
 
         for (i in windows.indices) {
@@ -50,27 +47,12 @@ class AnalyzeSessionUseCase @Inject constructor (
             results += prediction
         }
 
-        // aggregation of results
+        // 3. Aggregation of results
         return SessionAnalysisResult(results)
     }
 
     private fun mapModelOutputToWindowPrediction(output: ModelOutput, index: Int): WindowPrediction {
-        val predictedClass = getPredictedClass(output.scores)
+        val predictedClass = output.getPredictedClass()
         return WindowPrediction(index, predictedClass)
-    }
-
-    private fun getPredictedClass(scores: List<Float>): ActivityClass {
-        var classIndex = 0
-        var maxProb = 0f
-
-        for (i in scores.indices) {
-            val prob = scores[i]
-            if (prob > maxProb) {
-                maxProb = prob
-                classIndex = i
-            }
-        }
-
-        return classIndex
     }
 }
