@@ -1,0 +1,13 @@
+package com.five9th.motionlogger.domain.repos
+
+import com.five9th.motionlogger.domain.entities.SessionInfo
+import kotlinx.coroutines.flow.StateFlow
+
+interface SessionsRepo {
+    val sessions: StateFlow<List<SessionInfo>>
+    fun getSessionInfo(sessionId: Int): SessionInfo?
+    fun addSession(session: SessionInfo)
+    fun addAll(sessions: List<SessionInfo>)
+    fun removeSession(sessionId: Int)
+    fun clear()
+}

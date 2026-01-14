@@ -1,3 +1,37 @@
 <resources>
     <string name="app_name">Motion Logger</string>
+    <string name="yes">yes</string>
+    <string name="no">no</string>
+    <string name="sensors">Sensors</string>
+    <string name="accelerometer">Accelerometer:</string>
+    <string name="gyroscope">Gyroscope:</string>
+    <string name="magnetometer">Magnetometer:</string>
+    <string name="game_rotation_vector">GameRotationVector:</string>
+    <string name="rotation_vector">RotationVector:</string>
+    <string name="linear_acceleration">LinearAcceleration:</string>
+    <string name="gravity">Gravity:</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="collecting">Collecting…</string>
+    <string name="stopped">Stopped</string>
+    <string name="samples_label">samples:</string>
+    <string name="notif_channel_description">Shows ongoing sensor data collection</string>
+    <string name="notif_channel_name">Collecting sensor data</string>
+    <string name="collecting_sensor_data">Collecting Sensor Data</string>
+    <string name="notif_content_text">%1$s • Samples: %2$d</string>
+    <string name="session">session</string>
+    <string name="duration_h_min_sec">%1$d h, %2$d min, %3$d sec</string>
+    <string name="duration_min_sec">%1$d min, %2$d sec</string>
+    <string name="duration_sec">%1$d sec</string>
+    <string name="duration_label">duration:</string>
+    <string name="start_label">start:</string>
+    <string name="stop_label">stop:</string>
+
+    <string name="activity_dws">Downstairs</string>
+    <string name="activity_ups">Upstairs</string>
+    <string name="activity_wlk">Walking</string>
+    <string name="activity_jog">Jogging</string>
+    <string name="activity_std">Standing</string>
+    <string name="activity_sit">Sitting</string>
+    <string name="analysis_label">Analysis:</string>
 </resources>
