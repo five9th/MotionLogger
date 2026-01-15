@@ -8,19 +8,27 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import org.tensorflow.lite.Interpreter
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class TFLiteModelInference @Inject constructor (
-    provider: ModelFileProvider
+    private val provider: ModelFileProvider
 ) : ModelInference {
 
-    private val interpreter by lazy {
-        provider.getInterpreter() // must be called off main thread
-    }
+    private var isInterpreterLoaded = false
+    private var _interpreter: Interpreter? = null
 
-    // TODO: redesign `interpreter` property. Call interpreter.close() when MainViewModel is cleared
+    private fun getInterpreter(): Interpreter
+        = if (!isInterpreterLoaded || _interpreter == null) loadInterpreter() else _interpreter!!
+
+    private fun loadInterpreter(): Interpreter { // must be called off main thread
+        val interpreter = provider.getInterpreter()
+
+        _interpreter = interpreter
+        isInterpreterLoaded = true
+
+        return interpreter
+    }
 
     private val mutex = Mutex()
 
@@ -33,7 +41,7 @@ class TFLiteModelInference @Inject constructor (
                 val inputBuffer = mapDomainToModelInput(window)  // shape (1, 128, 9)
                 outputBuffer = createOutputBuffer()    // shape (1, 6)
 
-                interpreter.run(inputBuffer, outputBuffer)
+                getInterpreter().run(inputBuffer, outputBuffer)
             }
         }
 
@@ -60,4 +68,10 @@ class TFLiteModelInference @Inject constructor (
 
     // model's output shape is (1, 6)
     private fun createOutputBuffer() = Array(1) { FloatArray(6) }
+
+    override fun close() {
+        _interpreter?.close()
+        _interpreter = null
+        isInterpreterLoaded = false
+    }
 }
