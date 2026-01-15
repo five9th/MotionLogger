@@ -1,4 +1,4 @@
-package com.five9th.motionlogger.di
+package com.five9th.motionlogger.app.di
 
 import com.five9th.motionlogger.data.FilesRepoImpl
 import com.five9th.motionlogger.data.SensorsRepoImpl

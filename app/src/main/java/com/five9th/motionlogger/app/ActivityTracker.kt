@@ -1,4 +1,4 @@
-package com.five9th.motionlogger.di
+package com.five9th.motionlogger.app
 
 import android.app.Activity
 import android.app.Application
