@@ -1,7 +1,9 @@
-package com.five9th.motionlogger.data
+package com.five9th.motionlogger.data.repos
 
 import android.app.Application
 import android.util.Log
+import com.five9th.motionlogger.data.datamodel.RepoMapper
+import com.five9th.motionlogger.data.datamodel.SessionCSVModel
 import com.five9th.motionlogger.domain.entities.CollectingSession
 import com.five9th.motionlogger.domain.entities.SensorSample
 import com.five9th.motionlogger.domain.entities.SessionInfo

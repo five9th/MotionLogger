@@ -1,7 +1,7 @@
-package com.five9th.motionlogger.data
+package com.five9th.motionlogger.data.datamodel
 
-import com.five9th.motionlogger.data.FilesRepoImpl.Companion.FILENAME_PATTERN
-import com.five9th.motionlogger.data.FilesRepoImpl.Companion.FILENAME_REGEX
+import com.five9th.motionlogger.data.repos.FilesRepoImpl.Companion.FILENAME_PATTERN
+import com.five9th.motionlogger.data.repos.FilesRepoImpl.Companion.FILENAME_REGEX
 import com.five9th.motionlogger.domain.entities.CollectingSession
 import com.five9th.motionlogger.domain.entities.SessionInfo
 import com.five9th.motionlogger.domain.utils.TimeFormatHelper

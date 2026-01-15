@@ -1,4 +1,4 @@
-package com.five9th.motionlogger.data
+package com.five9th.motionlogger.data.datamodel
 
 import com.five9th.motionlogger.domain.entities.SensorSample
 

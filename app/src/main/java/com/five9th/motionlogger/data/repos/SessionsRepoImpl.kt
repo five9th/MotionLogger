@@ -1,4 +1,4 @@
-package com.five9th.motionlogger.data
+package com.five9th.motionlogger.data.repos
 
 import com.five9th.motionlogger.domain.entities.SessionInfo
 import com.five9th.motionlogger.domain.repos.SessionsRepo
