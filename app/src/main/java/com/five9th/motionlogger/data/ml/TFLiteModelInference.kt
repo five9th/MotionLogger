@@ -1,5 +1,6 @@
 package com.five9th.motionlogger.data.ml
 
+import android.util.Log
 import com.five9th.motionlogger.domain.entities.ModelOutput
 import com.five9th.motionlogger.domain.entities.SampleWindow
 import com.five9th.motionlogger.domain.entities.SensorSample
@@ -14,6 +15,8 @@ import javax.inject.Inject
 class TFLiteModelInference @Inject constructor (
     private val provider: ModelFileProvider
 ) : ModelInference {
+
+    private val tag = "ML"
 
     private var isInterpreterLoaded = false
     private var _interpreter: Interpreter? = null
@@ -70,6 +73,8 @@ class TFLiteModelInference @Inject constructor (
     private fun createOutputBuffer() = Array(1) { FloatArray(6) }
 
     override fun close() {
+        Log.d(tag, "Interpreter closing requested; interpreter is null: ${_interpreter == null};")
+
         _interpreter?.close()
         _interpreter = null
         isInterpreterLoaded = false

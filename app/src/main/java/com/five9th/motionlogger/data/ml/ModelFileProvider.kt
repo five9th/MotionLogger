@@ -14,7 +14,7 @@ class ModelFileProvider @Inject constructor (
         private const val MODEL_FILE_NAME = "tiny_cnn-raw-no-gravity.tflite"
     }
 
-    private val tag = "ModelFileProvider"
+    private val tag = "ML"
 
     fun getInterpreter(): Interpreter {
         val modelBuffer = FileUtil.loadMappedFile(application, MODEL_FILE_NAME)
