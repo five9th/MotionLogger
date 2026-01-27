@@ -1,8 +1,5 @@
 package com.five9th.motionlogger.presentation.ui
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -10,7 +7,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -95,40 +91,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun hasNotificationPermission(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
-    }
 
-    private fun checkPermissionsAndStartCollect() {
-        if (hasNotificationPermission()) {
-            // can start collecting with foreground service
-            mainViewModel.startCollect()
-        }
-        else {
-            // need to request permissions first
-            requestPermissionsAndStartCollect()
-        }
-    }
+    // ====== Notification stuff ======
 
     private val notificationPermissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
-        ::permissionResult
+        ::onNotificationPermissionResult
     )
 
-    private fun requestPermissionsAndStartCollect() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            notificationPermissionRequest.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
+    private val helper = NotificationHelper(this, notificationPermissionRequest)
+
+    private fun checkPermissionsAndStartCollect() {
+        helper.ensurePermission(
+            onGranted = { onNotificationPermissionResult(true) },
+            onDenied = { onNotificationPermissionResult(false) }
+        )
     }
 
-    private fun permissionResult(granted: Boolean) {
+    private fun onNotificationPermissionResult(granted: Boolean) {
         if (granted) {
             mainViewModel.startCollect()
         }
@@ -142,6 +122,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    // ====== Listeners ======
 
     private fun onSensorsInfoChanged(sensorsInfo: SensorsInfo) {
         val strYes = getString(R.string.yes)
