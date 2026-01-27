@@ -1,10 +1,16 @@
 package com.five9th.motionlogger.presentation.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -65,9 +71,9 @@ class MainActivity : AppCompatActivity() {
         mainViewModel.reloadSavedSessions()
     }
 
-    private fun setListeners() { // TODO: check for notification permission if Android 13+
+    private fun setListeners() {
         binding.btnStart.setOnClickListener {
-            mainViewModel.startCollect()
+            checkPermissionsAndStartCollect()
         }
 
         binding.btnStop.setOnClickListener {
@@ -88,6 +94,53 @@ class MainActivity : AppCompatActivity() {
             mainViewModel.sessionListSF.collect(::onSessionListChanged)
         }
     }
+
+    private fun hasNotificationPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    }
+
+    private fun checkPermissionsAndStartCollect() {
+        if (hasNotificationPermission()) {
+            // can start collecting with foreground service
+            mainViewModel.startCollect()
+        }
+        else {
+            // need to request permissions first
+            requestPermissionsAndStartCollect()
+        }
+    }
+
+    private val notificationPermissionRequest = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+        ::permissionResult
+    )
+
+    private fun requestPermissionsAndStartCollect() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermissionRequest.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    private fun permissionResult(granted: Boolean) {
+        if (granted) {
+            mainViewModel.startCollect()
+        }
+        else {
+            // show explanation or disable feature
+            Toast.makeText(
+                this,
+                getString(R.string.can_not_collect_without_notification),
+                Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
 
     private fun onSensorsInfoChanged(sensorsInfo: SensorsInfo) {
