@@ -2,7 +2,6 @@ package com.five9th.motionlogger.presentation.ui
 
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -110,15 +109,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun onNotificationPermissionResult(granted: Boolean) {
         if (granted) {
+            // start collection
             mainViewModel.startCollect()
         }
         else {
             // show explanation or disable feature
-            Toast.makeText(
-                this,
-                getString(R.string.can_not_collect_without_notification),
-                Toast.LENGTH_SHORT).show()
+            showExplanation()
         }
+    }
+
+    private fun showExplanation() {
+        helper.showNotificationSettingsDialog()
     }
 
 

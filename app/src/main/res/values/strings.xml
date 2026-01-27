@@ -34,5 +34,8 @@
     <string name="activity_std">Standing</string>
     <string name="activity_sit">Sitting</string>
     <string name="analysis_label">Analysis:</string>
-    <string name="can_not_collect_without_notification">Can\'t collect sensor data without a notification.</string>
+    <string name="notifications_required">Notifications required</string>
+    <string name="notifications_required_message">Notifications are required to collect sensor data in the background. Please enable them in settings.</string>
+    <string name="cancel">Cancel</string>
+    <string name="settings">Settings</string>
 </resources>
