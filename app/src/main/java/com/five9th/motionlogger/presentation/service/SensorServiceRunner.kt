@@ -52,7 +52,7 @@ class SensorServiceRunner @Inject constructor (
 
     // ---- Flows ----
     private val sensorDataSF: StateFlow<SensorSample?> = observeSensorsUseCase()
-        .stateIn(scope, SharingStarted.WhileSubscribed(), null)  // <-- maybe use smth different
+        .stateIn(scope, SharingStarted.WhileSubscribed(), null)
 
     override val isCollectingSF: StateFlow<Boolean> = observeCollectingStateUseCase()
 
@@ -68,11 +68,10 @@ class SensorServiceRunner @Inject constructor (
     override val savingCompletedSF: SharedFlow<Unit> = _savingCompletedSF.asSharedFlow()
 
     // ---- Variables ----
-    // TODO: add some self-counting timer for debugging
     private val collectedSamples = mutableListOf<SensorSample>()
 
-    private var startTimestamp: Long = 0L
-    private var stopTimestamp: Long = 0L
+    private var startCollectTime: Long = 0L
+    private var stopCollectTime: Long = 0L
 
     private var collectingJob: Job? = null
 
@@ -147,7 +146,7 @@ class SensorServiceRunner @Inject constructor (
         if (collectingJob != null) return
 
         collectedSamples.clear()
-        startTimestamp = System.currentTimeMillis()
+        startCollectTime = System.currentTimeMillis()
 
         collectingJob = scope.launch {
             sensorDataSF.collect { sample ->
@@ -193,7 +192,7 @@ class SensorServiceRunner @Inject constructor (
         stopCollectJob()
         stopTimerJob()
 
-        stopTimestamp = System.currentTimeMillis()
+        stopCollectTime = System.currentTimeMillis()
     }
 
     private fun saveAndFinish() {
@@ -236,8 +235,8 @@ class SensorServiceRunner @Inject constructor (
     private fun makeSession() = CollectingSession(
         SessionInfo(
             id = sessionId,
-            startTimeInSeconds = TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(startTimestamp),
-            stopTimeInSeconds = TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(stopTimestamp)
+            startTimeInSeconds = TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(startCollectTime),
+            stopTimeInSeconds = TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(stopCollectTime)
         ),
         collectedSamples
     )
