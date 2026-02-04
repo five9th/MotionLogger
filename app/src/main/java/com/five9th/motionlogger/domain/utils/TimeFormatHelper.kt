@@ -63,6 +63,12 @@ class TimeFormatHelper {
             val hours: Int,
             val minutes: Int,
             val seconds: Int
-        )
+        ) {
+            override fun toString(): String {
+                return (if (hours == 0) "" else "$hours h, ") +
+                        (if (minutes == 0) "" else "$minutes min, ") +
+                        "$seconds sec"
+            }
+        }
     }
 }
