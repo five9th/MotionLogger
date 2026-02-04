@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
+// TODO: also add REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
 @AndroidEntryPoint
 class SensorCollectionService : Service(), ISensorCollector {
 
@@ -35,9 +36,9 @@ class SensorCollectionService : Service(), ISensorCollector {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val lock = WakeLockHelper(this, logsOn = true)
-
     @Inject lateinit var runner: SensorServiceRunner
+
+    private lateinit var lock: WakeLockHelper
 
     private lateinit var notificationManager: NotificationManager
 
@@ -55,6 +56,8 @@ class SensorCollectionService : Service(), ISensorCollector {
 
     override fun onCreate() {  // Hilt injects before onCreate()
         super.onCreate()
+
+        lock = WakeLockHelper(this, logsOn = true)
 
         initFlows()
         initNotification()
