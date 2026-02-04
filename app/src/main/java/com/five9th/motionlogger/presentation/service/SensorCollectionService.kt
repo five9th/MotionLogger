@@ -35,6 +35,8 @@ class SensorCollectionService : Service(), ISensorCollector {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
+    private val lock = WakeLockHelper(this, logsOn = true)
+
     @Inject lateinit var runner: SensorServiceRunner
 
     private lateinit var notificationManager: NotificationManager
@@ -120,6 +122,7 @@ class SensorCollectionService : Service(), ISensorCollector {
 
     override fun onDestroy() {
         scope.cancel()
+        lock.cleanup()
         runner.cancelScope()
         super.onDestroy()
     }
@@ -192,9 +195,11 @@ class SensorCollectionService : Service(), ISensorCollector {
     // ------ ISensorCollector impl by runner ------
     override fun startCollect() {
         runner.startCollect()
+        lock.acquireWakeLock()
     }
 
     override fun stopCollectAndSave() {
+        lock.releaseWakeLock()
         runner.stopCollectAndSave()
     }
 
