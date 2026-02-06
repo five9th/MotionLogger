@@ -235,6 +235,7 @@ class SensorServiceRunner @Inject constructor (
     private fun makeSession() = CollectingSession(
         SessionInfo(
             id = sessionId,
+            keyWord = "",  //todo
             startTimeInSeconds = TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(startCollectTime),
             stopTimeInSeconds = TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(stopCollectTime)
         ),
