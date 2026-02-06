@@ -22,9 +22,10 @@ class FilesRepoImpl @Inject constructor (
         private const val SESSIONS_DIR = "sessions"
         private const val LAST_ID_FILE = "last_session_id.txt"
 
-        const val FILENAME_PATTERN = "session-%03d-%s-%s.csv" // session-001-12:35:42-12:40:21.csv
+        // Example: "session-001-route_1-12:35:42-12:40:21.csv"
+        const val FILENAME_PATTERN = "session-%03d-%s-%s-%s.csv"
         val FILENAME_REGEX =
-            Regex("""session-(\d+)-(.+)-(.+)\.csv""")
+            Regex("""session-(\d+)-(.*)-(.+)-(.+)\.csv""")
     }
 
     private val mapper = RepoMapper()

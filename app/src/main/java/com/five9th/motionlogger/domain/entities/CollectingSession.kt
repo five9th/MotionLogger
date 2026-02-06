@@ -10,6 +10,7 @@ data class CollectingSession(
 
 data class SessionInfo(
     val id: Int,
+    val keyWord: String,
 
     /** Amount of seconds from 0 to 86_399, represents time in HH:mm:ss format */
     val startTimeInSeconds: Int,
