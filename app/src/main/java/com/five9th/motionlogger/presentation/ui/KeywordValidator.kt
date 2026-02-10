@@ -21,14 +21,20 @@ class KeywordValidator(private val til: TextInputLayout) {
         else til.context.getString(R.string.err_forbiden_characters)
     }
 
-    private fun isValid(input: String): Boolean =
-        input.length <= MAX_LENGTH &&
-        ALLOWED_REGEX.matches(input)
+    fun getCurrentWordOrNull(): String? {
+        val keyword = et.text.toString()
+
+        return if (isValid(keyword)) keyword else null
+    }
 
     companion object {
         private val ALLOWED_REGEX =
             Regex("^[\\p{L}\\p{N}_.,]*$")
 
         private const val MAX_LENGTH = 32
+
+        private fun isValid(input: String): Boolean =
+            input.length <= MAX_LENGTH &&
+                    ALLOWED_REGEX.matches(input)
     }
 }

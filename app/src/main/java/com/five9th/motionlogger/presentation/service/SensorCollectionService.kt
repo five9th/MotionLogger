@@ -81,7 +81,7 @@ class SensorCollectionService : Service(), ISensorCollector {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> startCollectionService()
-            ACTION_STOP -> stopCollectionService()
+            ACTION_STOP -> stopCollectionService(intent)
             null -> stopSelf()  // if service got restarted (somehow)
         }
         return START_NOT_STICKY
@@ -118,9 +118,11 @@ class SensorCollectionService : Service(), ISensorCollector {
         }
     }
 
-    private fun stopCollectionService() {
+    private fun stopCollectionService(intent: Intent?) {
+        val sessionKeyWord = intent?.getStringExtra(EXTRA_KEYWORD) ?: DEFAULT_KEYWORD_VALUE
+
         // stop self after saving
-        stopCollectAndSave()
+        stopCollectAndSave(sessionKeyWord)
     }
 
     override fun onDestroy() {
@@ -201,9 +203,9 @@ class SensorCollectionService : Service(), ISensorCollector {
         lock.acquireWakeLock()
     }
 
-    override fun stopCollectAndSave() {
+    override fun stopCollectAndSave(sessionKeyWord: String) {
         lock.releaseWakeLock()
-        runner.stopCollectAndSave()
+        runner.stopCollectAndSave(sessionKeyWord)
     }
 
     override lateinit var isCollectingSF: StateFlow<Boolean>
@@ -216,6 +218,8 @@ class SensorCollectionService : Service(), ISensorCollector {
     companion object {
         private const val ACTION_START = "START_COLLECTION"
         private const val ACTION_STOP = "STOP_COLLECTION"
+        private const val EXTRA_KEYWORD = "extra_keyword"
+        private const val DEFAULT_KEYWORD_VALUE = ""
 
         private const val NOTIFICATION_ID = 100
 
@@ -228,8 +232,9 @@ class SensorCollectionService : Service(), ISensorCollector {
             Intent(context, SensorCollectionService::class.java)
                 .setAction(ACTION_START)
 
-        fun newIntentStop(context: Context) =
+        fun newIntentStop(context: Context, sessionKeyWord: String) =
             Intent(context, SensorCollectionService::class.java)
                 .setAction(ACTION_STOP)
+                .putExtra(EXTRA_KEYWORD, sessionKeyWord)
     }
 }

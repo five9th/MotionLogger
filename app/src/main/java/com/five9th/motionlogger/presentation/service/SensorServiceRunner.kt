@@ -180,9 +180,9 @@ class SensorServiceRunner @Inject constructor (
         _collectionStatsSF.value = CollectionStats(elapsed, count)
     }
 
-    override fun stopCollectAndSave() {
+    override fun stopCollectAndSave(sessionKeyWord: String) {
         stopCollect()
-        saveAndFinish()
+        saveAndFinish(sessionKeyWord)
     }
 
     private fun stopCollect() {
@@ -195,8 +195,8 @@ class SensorServiceRunner @Inject constructor (
         stopCollectTime = System.currentTimeMillis()
     }
 
-    private fun saveAndFinish() {
-        val savingJob = saveToCsv()
+    private fun saveAndFinish(sessionKeyWord: String) {
+        val savingJob = saveToCsv(sessionKeyWord)
 
         scope.launch {
             savingJob?.join()
@@ -217,13 +217,13 @@ class SensorServiceRunner @Inject constructor (
         _collectionStatsSF.value = CollectionStats(0L, 0)
     }
 
-    private fun saveToCsv(): Job? {
+    private fun saveToCsv(sessionKeyWord: String): Job? {
         if (collectedSamples.isEmpty()) {
             Log.w(tag, "Nothing to save")
             return null
         }
 
-        val session = makeSession()
+        val session = makeSession(sessionKeyWord)
 
         Log.d(tag, "Saving session #${session.id} (${session.samples.size} samples).")
 
@@ -232,10 +232,10 @@ class SensorServiceRunner @Inject constructor (
         }
     }
 
-    private fun makeSession() = CollectingSession(
+    private fun makeSession(sessionKeyWord: String) = CollectingSession(
         SessionInfo(
             id = sessionId,
-            keyWord = "",  //todo
+            keyWord = sessionKeyWord,
             startTimeInSeconds = TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(startCollectTime),
             stopTimeInSeconds = TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(stopCollectTime)
         ),

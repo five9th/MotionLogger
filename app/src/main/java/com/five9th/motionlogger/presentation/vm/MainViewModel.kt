@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
+// TODO: disable the start btn if keyword is invalid and disable the keyword input if collection is in progress
 // TODO: load samples to current_session.csv every few minutes
 
 @HiltViewModel
@@ -142,6 +142,6 @@ class MainViewModel @Inject constructor (
 
     fun stopCollectAndSave(sessionKeyWord: String) {
         if (!isCollectingSF.value || !isBound) return
-        service?.stopCollectAndSave()
+        service?.stopCollectAndSave(sessionKeyWord)
     }
 }

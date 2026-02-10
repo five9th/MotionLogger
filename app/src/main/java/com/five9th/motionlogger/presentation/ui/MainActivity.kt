@@ -134,8 +134,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onStopClick() {
-        // TODO: get key word
-        mainViewModel.stopCollectAndSave("")
+        val sessionKeyWord = keywordValidator.getCurrentWordOrNull() ?: "" // if input is invalid use empty string instead
+        mainViewModel.stopCollectAndSave(sessionKeyWord)
     }
 
     private fun onInfoClick() {

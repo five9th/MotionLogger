@@ -139,6 +139,7 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+<!--    TODO: use link-styled TextView instead-->
     <ImageButton
         android:id="@+id/btn_sensor_info"
         android:layout_width="40dp"
