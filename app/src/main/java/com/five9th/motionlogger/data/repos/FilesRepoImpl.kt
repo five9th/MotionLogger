@@ -1,7 +1,9 @@
-package com.five9th.motionlogger.data
+package com.five9th.motionlogger.data.repos
 
 import android.app.Application
 import android.util.Log
+import com.five9th.motionlogger.data.datamodel.RepoMapper
+import com.five9th.motionlogger.data.datamodel.SessionCSVModel
 import com.five9th.motionlogger.domain.entities.CollectingSession
 import com.five9th.motionlogger.domain.entities.SensorSample
 import com.five9th.motionlogger.domain.entities.SessionInfo
@@ -20,9 +22,10 @@ class FilesRepoImpl @Inject constructor (
         private const val SESSIONS_DIR = "sessions"
         private const val LAST_ID_FILE = "last_session_id.txt"
 
-        const val FILENAME_PATTERN = "session-%03d-%s-%s.csv" // session-001-12:35:42-12:40:21.csv
+        // Example: "session-001-route_1-12:35:42-12:40:21.csv"
+        const val FILENAME_PATTERN = "session-%03d-%s-%s-%s.csv"
         val FILENAME_REGEX =
-            Regex("""session-(\d+)-(.+)-(.+)\.csv""")
+            Regex("""session-(\d+)-(.*)-(.+)-(.+)\.csv""")
     }
 
     private val mapper = RepoMapper()

@@ -5,8 +5,6 @@ import android.content.ComponentName
 import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.five9th.motionlogger.domain.entities.SensorsInfo
@@ -23,7 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
+// TODO: disable the start btn if keyword is invalid and disable the keyword input if collection is in progress
 // TODO: load samples to current_session.csv every few minutes
 
 @HiltViewModel
@@ -41,8 +39,8 @@ class MainViewModel @Inject constructor (
     private var isBound = false
 
     // ---- UI State ----
-    private val _sensorsInfoLD = MutableLiveData<SensorsInfo>()
-    val sensorsInfoLD: LiveData<SensorsInfo> = _sensorsInfoLD
+    private val _sensorsInfoSF = MutableStateFlow<SensorsInfo?>(null)
+    val sensorsInfoSF = _sensorsInfoSF.asStateFlow()
 
     private val _isCollectingSF = MutableStateFlow(false)
     val isCollectingSF = _isCollectingSF.asStateFlow()
@@ -122,7 +120,7 @@ class MainViewModel @Inject constructor (
     // ---- Public methods for Activity ----
 
     fun getSensorsInfo() {
-        _sensorsInfoLD.value = getSensorsInfoUseCase()
+        _sensorsInfoSF.value = getSensorsInfoUseCase()
     }
 
     fun reloadSavedSessions() {
@@ -142,8 +140,8 @@ class MainViewModel @Inject constructor (
         bindToService()
     }
 
-    fun stopCollect() {
+    fun stopCollectAndSave(sessionKeyWord: String) {
         if (!isCollectingSF.value || !isBound) return
-        service?.stopCollectAndSave()
+        service?.stopCollectAndSave(sessionKeyWord)
     }
 }

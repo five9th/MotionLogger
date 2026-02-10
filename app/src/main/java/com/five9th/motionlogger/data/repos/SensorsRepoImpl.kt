@@ -1,10 +1,11 @@
-package com.five9th.motionlogger.data
+package com.five9th.motionlogger.data.repos
 
 import android.app.Application
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.SystemClock
 import android.util.Log
 import com.five9th.motionlogger.domain.entities.SensorSample
 import com.five9th.motionlogger.domain.entities.SensorsInfo
@@ -45,6 +46,8 @@ class SensorsRepoImpl @Inject constructor (
     private var lastGyro: FloatArray? = null
     private var lastEuler: FloatArray? = null
 
+    private var startTimestamp = 0L
+
     private var samplingJob: Job? = null
 
     private val _isCollecting = MutableStateFlow(false)
@@ -54,6 +57,8 @@ class SensorsRepoImpl @Inject constructor (
         if (isCollecting.value) return
 
         _isCollecting.value = true
+
+        startTimestamp = SystemClock.elapsedRealtime()
 
         registerListeners()
         startSampler()
@@ -85,7 +90,7 @@ class SensorsRepoImpl @Inject constructor (
 
         if (a != null && g != null && e != null) {
             val sample = SensorSample(
-                timestampMs = System.currentTimeMillis(), // TODO: make timestamp shorter (maybe sampleTimestamp - startTimestamp (`SystemClock.elapsedRealtime()`))
+                timestampMs = getSampleTimestamp(),
                 accX = a[0], accY = a[1], accZ = a[2],
                 gyroX = g[0], gyroY = g[1], gyroZ = g[2],
                 roll = e[0], pitch = e[1], yaw = e[2]
@@ -93,6 +98,8 @@ class SensorsRepoImpl @Inject constructor (
             _flow.tryEmit(sample)
         }
     }
+
+    private fun getSampleTimestamp(): Long = SystemClock.elapsedRealtime() - startTimestamp
 
     override fun stop() {
         _isCollecting.value = false
@@ -105,9 +112,9 @@ class SensorsRepoImpl @Inject constructor (
 
 
     // temp log for testing
-    var accCounter = 0
-    var gyrCounter = 0
-    var rotCounter = 0
+    private var accCounter = 0
+    private var gyrCounter = 0
+    private var rotCounter = 0
 
     override fun onSensorChanged(event: SensorEvent) {
         when (event.sensor.type) {

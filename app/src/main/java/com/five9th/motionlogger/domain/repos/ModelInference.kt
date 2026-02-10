@@ -5,4 +5,5 @@ import com.five9th.motionlogger.domain.entities.SampleWindow
 
 interface ModelInference {
     suspend fun run(window: SampleWindow): ModelOutput
+    fun close()
 }
