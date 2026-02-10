@@ -9,7 +9,7 @@ class UiMapper(private val context: Context) {
     fun mapDomainToUiModel(session: SessionInfo): SessionItem {
         return SessionItem(
             number = session.id.toString(),
-            keyWord = "", // add this later
+            keyWord = session.keyWord,
             startTime = TimeFormatHelper.timeOfDaySecondsToHhMmSs(session.startTimeInSeconds),
             stopTime = TimeFormatHelper.timeOfDaySecondsToHhMmSs(session.stopTimeInSeconds),
             duration = secondsToDurationString(
