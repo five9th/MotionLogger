@@ -1,7 +1,13 @@
 package com.five9th.motionlogger.presentation.ui
 
+import android.content.Context
+import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
+import android.view.View
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -20,6 +26,7 @@ import com.five9th.motionlogger.presentation.vm.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Locale
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -142,6 +149,39 @@ class MainActivity : AppCompatActivity() {
             infoFlow = mainViewModel.sensorsInfoSF,
             requestInfoCallback = mainViewModel::getSensorsInfo
         )
+    }
+
+
+    // ====== clear EditText's focus ======
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        if (ev?.action == MotionEvent.ACTION_DOWN) {
+            val focusedView = currentFocus
+            if (focusedView is EditText) {
+                if (!isClickInsideView(ev, focusedView)) {
+                    clearFocusAndHideKeyboard(focusedView)
+                }
+            }
+        }
+
+        return super.dispatchTouchEvent(ev)
+    }
+
+    private fun isClickInsideView(event: MotionEvent, view: View): Boolean {
+        val outRect = Rect()
+        view.getGlobalVisibleRect(outRect)
+
+        return outRect.contains(event.rawX.toInt(), event.rawY.toInt())
+    }
+
+    private fun clearFocusAndHideKeyboard(view: View) {
+        view.clearFocus()
+        hideKeyboard()
+    }
+
+    private fun hideKeyboard() {
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
     }
 
 
