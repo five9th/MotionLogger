@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
             onStopClick()
         }
 
-        binding.btnSensorInfo.setOnClickListener {
+        binding.tvSensorInfo.setOnClickListener {
             onInfoClick()
         }
     }

@@ -134,25 +134,25 @@
             android:ellipsize="end"
             android:maxLength="32"
 
-            tools:text="qwerty \nqwerty qwerty qwerty qwerty \n qwerty qwerty "
+            tools:text="route_1"
             />
 
     </com.google.android.material.textfield.TextInputLayout>
 
-<!--    TODO: use link-styled TextView instead-->
-    <ImageButton
-        android:id="@+id/btn_sensor_info"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+    <TextView
+        android:id="@+id/tv_sensor_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
 
-        android:contentDescription="@string/sensors_info"
+        android:text="@string/sensors_info"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_margin="4dp"
+        android:textSize="17sp"
 
-        android:src="@drawable/ic_info"
-        android:scaleType="fitCenter"
-        android:background="?selectableItemBackground"
+        android:textColor="?attr/colorPrimary"
+        android:clickable="true"
+        android:focusable="true"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
