@@ -7,27 +7,12 @@
     android:layout_height="match_parent"
     tools:context=".presentation.ui.MainActivity">
 
-    <ImageButton
-        android:id="@+id/btn_sensor_info"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-
-        android:contentDescription="@string/sensors_info"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_margin="4dp"
-
-        android:src="@drawable/ic_info"
-        android:scaleType="fitCenter"
-        android:background="?selectableItemBackground"
-        />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_session_list"
         android:layout_width="0dp"
         android:layout_height="0dp"
 
-        app:layout_constraintTop_toBottomOf="@id/ll_collection_Stats"
+        app:layout_constraintTop_toBottomOf="@id/ll_collection_stats"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -86,7 +71,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/ll_collection_Stats"
+        android:id="@+id/ll_collection_stats"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -122,5 +107,51 @@
             tools:text="1234567889"
             />
     </LinearLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_keyword"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+
+        app:layout_constraintLeft_toRightOf="@id/ll_collection_stats"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/rv_session_list"
+        app:layout_constraintVertical_bias="1.0"
+
+        android:hint="@string/hint_session_keyword"
+        >
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_keyword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:maxLines="1"
+            android:inputType="text"
+            android:scrollHorizontally="true"
+            android:ellipsize="end"
+            android:maxLength="32"
+
+            tools:text="qwerty \nqwerty qwerty qwerty qwerty \n qwerty qwerty "
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageButton
+        android:id="@+id/btn_sensor_info"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+
+        android:contentDescription="@string/sensors_info"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_margin="4dp"
+
+        android:src="@drawable/ic_info"
+        android:scaleType="fitCenter"
+        android:background="?selectableItemBackground"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
