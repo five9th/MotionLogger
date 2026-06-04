@@ -11,7 +11,10 @@ class ModelFileProvider @Inject constructor (
 ) {
 
     companion object {
-        private const val MODEL_FILE_NAME = "tiny_cnn-raw-no-gravity.tflite"
+        // models:
+        // tiny_cnn-raw-att-zscore-gyro-user_acc.tflite
+        // tiny_cnn-raw-no-gravity.tflite
+        private const val MODEL_FILE_NAME = "tiny_cnn-raw-att-zscore-gyro-user_acc.tflite"
     }
 
     private val tag = "ML"
