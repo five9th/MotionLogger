@@ -16,7 +16,14 @@ class TFLiteModelInference @Inject constructor (
     private val provider: ModelFileProvider
 ) : ModelInference {
 
+    companion object {
+        private const val WINDOW_SIZE = 128
+        private const val N_CLASSES = 6
+    }
+
     private val tag = "ML"
+
+    private val preprocessor = DataPreprocessor()
 
     private var isInterpreterLoaded = false
     private var _interpreter: Interpreter? = null
@@ -63,14 +70,19 @@ class TFLiteModelInference @Inject constructor (
         }
 
         return Array(1) {
-            Array(128) { i ->
-                sampleToFloatArray(window.samples[i])
+            Array(WINDOW_SIZE) { i ->
+                // maybe optimize this later
+                val s = window.samples[i]
+                val sConv = preprocessor.convertUnits(s)
+                val sNorm = preprocessor.applyZScore(sConv)
+
+                sampleToFloatArray(sNorm)
             }
         }
     }
 
     // model's output shape is (1, 6)
-    private fun createOutputBuffer() = Array(1) { FloatArray(6) }
+    private fun createOutputBuffer() = Array(1) { FloatArray(N_CLASSES) }
 
     override fun close() {
         Log.d(tag, "Interpreter closing requested; interpreter is null: ${_interpreter == null};")
