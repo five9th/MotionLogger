@@ -136,6 +136,7 @@ class SensorsRepoImpl @Inject constructor (
         }
     }
 
+    // TODO: re-check this after the ai
     private fun processGameRotationVector(values: FloatArray): FloatArray {
         val qx = values[0]
         val qy = values[1]
