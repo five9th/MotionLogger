@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.five9th.motionlogger.R
 import com.five9th.motionlogger.domain.entities.ActivityClass
 import com.five9th.motionlogger.domain.entities.CollectingSession
-import com.five9th.motionlogger.domain.usecases.AnalyzeSessionUseCase
+import com.five9th.motionlogger.domain.usecases.ml.AnalyzeSessionUseCase
 import com.five9th.motionlogger.domain.usecases.GetSessionInfoUseCase
 import com.five9th.motionlogger.domain.usecases.GetSessionUseCase
 import com.five9th.motionlogger.presentation.uimodel.SessionItem

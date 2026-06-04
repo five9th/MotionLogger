@@ -70,6 +70,7 @@ class SensorsRepoImpl @Inject constructor (
         sensors.linearAcceleration?.let { sensors.sm.registerListener(this, it, periodMicros) }
         sensors.gyroscope?.let { sensors.sm.registerListener(this, it, periodMicros) }
         sensors.gameRotationVector?.let { sensors.sm.registerListener(this, it, periodMicros) }
+    // TODO: try rotationVector instead (may improve accuracy)
     }
 
     private fun startSampler() {

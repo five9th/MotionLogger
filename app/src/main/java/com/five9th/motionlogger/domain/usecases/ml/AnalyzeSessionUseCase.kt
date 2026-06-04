@@ -1,4 +1,4 @@
-package com.five9th.motionlogger.domain.usecases
+package com.five9th.motionlogger.domain.usecases.ml
 
 import android.util.Log
 import com.five9th.motionlogger.domain.entities.CollectingSession

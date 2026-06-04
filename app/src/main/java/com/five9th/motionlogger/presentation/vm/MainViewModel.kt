@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.ComponentName
 import android.content.ServiceConnection
 import android.os.IBinder
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
@@ -21,16 +22,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// TODO: log crashes
 // TODO: disable the start btn if keyword is invalid and disable the keyword input if collection is in progress
 // TODO: load samples to current_session.csv every few minutes
-// TODO: save/restore last session keyword
 
 @HiltViewModel
 class MainViewModel @Inject constructor (
     private val getSensorsInfoUseCase: GetSensorsInfoUseCase,
     private val reloadSavedSessionsUseCase: ReloadSavedSessionsUseCase,
     private val observeSessionListUseCase: ObserveSessionListUseCase,
+    realTimeRunner: RealTimeRecognitionRunner,
     application: Application
 ) : AndroidViewModel(application) {
 
@@ -54,6 +54,9 @@ class MainViewModel @Inject constructor (
 
     private val _sessionListSF = MutableStateFlow<List<SessionInfo>>(listOf())
     val sessionListSF: StateFlow<List<SessionInfo>> = _sessionListSF.asStateFlow()
+
+    val currentActivityScoresSF = realTimeRunner.currentScoresSF
+
 
     init {
         viewModelScope.launch {
@@ -116,6 +119,19 @@ class MainViewModel @Inject constructor (
             isBound = false
         }
         super.onCleared()
+    }
+
+
+    // ---- Real-time HAR ----
+    init {
+        realTimeRunner.start()
+
+        // debug
+        viewModelScope.launch {
+            realTimeRunner.currentScoresSF.collect {
+                Log.d(tag, "scores: $it")
+            }
+        }
     }
 
 
