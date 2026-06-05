@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Row template repeated 6 times -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/activity_dws"/>
+
+            <TextView
+                android:id="@+id/pct_dws"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0%"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/activity_ups"/>
+
+            <TextView
+                android:id="@+id/pct_ups"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0%"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/activity_wlk"/>
+
+            <TextView
+                android:id="@+id/pct_wlk"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0%"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/activity_jog"/>
+
+            <TextView
+                android:id="@+id/pct_jog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0%"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/activity_std"/>
+
+            <TextView
+                android:id="@+id/pct_std"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0%"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/activity_sit"/>
+
+            <TextView
+                android:id="@+id/pct_sit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0%"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
