@@ -11,6 +11,8 @@ class AnalyzeWindowUseCase @Inject constructor (
     suspend operator fun invoke(
         window: SampleWindow
     ): ModelOutput {
-        return model.run(window)
+        return model
+            .run(window)
+            .adjust()  // stair classes are dominating rn for some reason
     }
 }

@@ -27,4 +27,18 @@ data class ModelOutput(val scores: List<Float>) {
 
         return ActivityClass.fromInt(classIndex)
     }
+
+    // ["dws", "ups", "wlk", "jog", "std", "sit"]
+    private val coefs = arrayOf(
+        0.2f, // dws
+        0.2f, // ups
+        1f,   // wlk
+        1f,   // jog
+        1f,   // std
+        1f    // sit
+    )
+
+    fun adjust(): ModelOutput {
+        return ModelOutput(List(6) { i -> scores[i] * coefs[i]})
+    }
 }

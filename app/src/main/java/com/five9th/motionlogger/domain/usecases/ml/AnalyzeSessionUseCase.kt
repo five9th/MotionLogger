@@ -6,11 +6,10 @@ import com.five9th.motionlogger.domain.entities.ModelOutput
 import com.five9th.motionlogger.domain.entities.SampleWindow
 import com.five9th.motionlogger.domain.entities.SessionAnalysisResult
 import com.five9th.motionlogger.domain.entities.WindowPrediction
-import com.five9th.motionlogger.domain.repos.ModelInference
 import javax.inject.Inject
 
 class AnalyzeSessionUseCase @Inject constructor (
-    private val model: ModelInference
+    private val analyzeWindowUseCase: AnalyzeWindowUseCase
 ) {
     companion object {
         private const val WINDOW_SIZE = 128
@@ -42,7 +41,7 @@ class AnalyzeSessionUseCase @Inject constructor (
 
         for (i in windows.indices) {
             val window = windows[i]
-            val output = model.run(window)
+            val output = analyzeWindowUseCase(window)
             val prediction = mapModelOutputToWindowPrediction(output, i)
 
             results += prediction
