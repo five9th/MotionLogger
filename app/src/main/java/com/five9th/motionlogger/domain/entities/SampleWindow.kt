@@ -30,8 +30,8 @@ data class ModelOutput(val scores: List<Float>) {
 
     // ["dws", "ups", "wlk", "jog", "std", "sit"]
     private val coefs = arrayOf(
-        0.2f, // dws
-        0.2f, // ups
+        0.9f, // dws
+        0.9f, // ups
         1f,   // wlk
         1f,   // jog
         1f,   // std

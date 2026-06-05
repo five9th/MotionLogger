@@ -26,7 +26,9 @@ class RealTimeTabFragment : Fragment() {
     private val helper: ActivityPercentageDisplayer
         get() = _helper
             ?: ActivityPercentageDisplayer(
-                binding, mainViewModel.currentActivityScoresSF, lifecycleScope
+                binding,
+                percentFlow =  mainViewModel.currentActivityScoresSF,
+                scope = lifecycleScope
             ).also {
                 _helper = it
             }

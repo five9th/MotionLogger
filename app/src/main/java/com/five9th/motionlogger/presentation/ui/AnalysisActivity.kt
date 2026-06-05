@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class AnalysisActivity : AppCompatActivity() {
-
+//todo: pie chart
     private val tag = "AnalysisActivity"
 
     private val viewModel: AnalysisViewModel by viewModels()
@@ -95,7 +95,7 @@ class AnalysisActivity : AppCompatActivity() {
     private fun onWindowPredictionsAvailable(predictions: List<WindowPrediction>) {
         // init adapter
         val adapter = WindowBarsAdapter(predictions) {
-            viewModel.onWindowPredictionClick(it)
+            viewModel.onWindowPredictionClick(it, supportFragmentManager)
         }
 
         binding.rvWindowBars.adapter = adapter

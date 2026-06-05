@@ -2,6 +2,7 @@ package com.five9th.motionlogger.presentation.vm
 
 import android.app.Application
 import android.util.Log
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.application
@@ -15,6 +16,8 @@ import com.five9th.motionlogger.domain.usecases.ml.AnalyzeSessionUseCase
 import com.five9th.motionlogger.domain.usecases.GetSessionInfoUseCase
 import com.five9th.motionlogger.domain.usecases.GetSessionUseCase
 import com.five9th.motionlogger.domain.usecases.WindowSessionUseCase
+import com.five9th.motionlogger.domain.usecases.ml.AnalyzeWindowUseCase
+import com.five9th.motionlogger.presentation.ui.fragment.WindowInfoDialogFragment
 import com.five9th.motionlogger.presentation.uimodel.SessionItem
 import com.five9th.motionlogger.presentation.uimodel.UiMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,6 +38,7 @@ class AnalysisViewModel @Inject constructor (
     private val getSessionInfoUseCase: GetSessionInfoUseCase,
     private val getSessionUseCase: GetSessionUseCase,
     private val analyzeSessionUseCase: AnalyzeSessionUseCase,
+    private val analyzeWindowUseCase: AnalyzeWindowUseCase,
     savedStateHandle: SavedStateHandle,
     application: Application
 ) : AndroidViewModel(application) {
@@ -168,9 +172,22 @@ class AnalysisViewModel @Inject constructor (
         return application.getString(resId)
     }
 
-    fun onWindowPredictionClick(prediction: WindowPrediction) {
+    fun onWindowPredictionClick(prediction: WindowPrediction, manager: FragmentManager) {
         Log.d(tag, "Window #${prediction.windowIndex}: ${getActivityName(prediction.predictedClass)}")
-        // TODO: open fragment
+
+        viewModelScope.launch {
+            val score = getScore(prediction.windowIndex)
+
+            val fragment = WindowInfoDialogFragment.newInstance(score, prediction.windowIndex)
+            fragment.show(manager, "window")
+        }
+    }
+
+    private suspend fun getScore(windowIdx: Int): List<Float> {
+        val w = sessionWindows[windowIdx]
+        val result = analyzeWindowUseCase(w)
+
+        return result.scores
     }
 
 
