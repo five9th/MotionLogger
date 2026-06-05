@@ -1,4 +1,4 @@
-package com.five9th.motionlogger.presentation.ui
+package com.five9th.motionlogger.presentation.ui.fragment
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import com.five9th.motionlogger.databinding.FragmentSessionListTabBinding
 import com.five9th.motionlogger.domain.entities.SessionInfo
 import com.five9th.motionlogger.presentation.adapters.SessionInfoAdapter
+import com.five9th.motionlogger.presentation.ui.AnalysisActivity
 import com.five9th.motionlogger.presentation.uimodel.UiMapper
 import com.five9th.motionlogger.presentation.vm.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint

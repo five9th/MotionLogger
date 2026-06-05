@@ -3,8 +3,8 @@ package com.five9th.motionlogger.presentation.adapters
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.five9th.motionlogger.presentation.ui.RealTimeTabFragment
-import com.five9th.motionlogger.presentation.ui.SessionListTabFragment
+import com.five9th.motionlogger.presentation.ui.fragment.RealTimeTabFragment
+import com.five9th.motionlogger.presentation.ui.fragment.SessionListTabFragment
 
 class MainPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
 
