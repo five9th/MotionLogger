@@ -12,17 +12,22 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.five9th.motionlogger.R
 import com.five9th.motionlogger.databinding.ActivityAnalysisBinding
+import com.five9th.motionlogger.domain.entities.ActivityClass
 import com.five9th.motionlogger.domain.entities.WindowPrediction
 import com.five9th.motionlogger.presentation.adapters.WindowBarsAdapter
 import com.five9th.motionlogger.presentation.uimodel.SessionItem
 import com.five9th.motionlogger.presentation.vm.AnalysisViewModel
+import com.github.mikephil.charting.components.Legend
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class AnalysisActivity : AppCompatActivity() {
-//todo: pie chart
+
     private val tag = "AnalysisActivity"
 
     private val viewModel: AnalysisViewModel by viewModels()
@@ -93,12 +98,47 @@ class AnalysisActivity : AppCompatActivity() {
     }
 
     private fun onWindowPredictionsAvailable(predictions: List<WindowPrediction>) {
-        // init adapter
+        initAdapter(predictions)
+        makePieChart(predictions)
+    }
+
+    private fun initAdapter(predictions: List<WindowPrediction>) {
         val adapter = WindowBarsAdapter(predictions) {
             viewModel.onWindowPredictionClick(it, supportFragmentManager)
         }
 
         binding.rvWindowBars.adapter = adapter
+    }
+
+    private fun makePieChart(predictions: List<WindowPrediction>) {
+        val counts: Map<ActivityClass, Int> =
+            predictions.groupingBy { it.predictedClass }.eachCount()
+
+        val colors = ArrayList<Int>()
+        // Convert that into pie chart entries
+        val entries = counts.map { (type, count) ->
+            colors.add(mapColor(type))
+            PieEntry(count.toFloat(), type.name)
+        }
+
+        val dataSet = PieDataSet(entries, "Activities")
+
+        dataSet.colors = colors
+
+        val data = PieData(dataSet)
+        val pieChart = binding.pieChart
+
+        pieChart.data = data
+        pieChart.description.isEnabled = false
+        pieChart.setDrawEntryLabels(false)
+//        pieChart.legend.textSize = 14f
+        pieChart.legend.isWordWrapEnabled = true
+
+        pieChart.invalidate()
+    }
+
+    private fun mapColor(actClass: ActivityClass): Int {
+        return WindowBarsAdapter.mapActivityToColor(actClass, this)
     }
 
 

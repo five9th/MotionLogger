@@ -147,16 +147,16 @@ class AnalysisViewModel @Inject constructor (
 
         _predictionsSF.emit(result.windowResults)
 
-        val percentages = result.getPercentages()
-
-        var text = ""  // <-- not so great but will do for now
-
-        for ((act, percent) in percentages) {
-            text += "${getActivityName(act)}: ${(percent * 100).roundToInt()}%\n"
-        }
-
-        // display result
-        _analysisResultTextSF.value = text
+//        val percentages = result.getPercentages()
+//
+//        var text = ""  // <-- not so great but will do for now
+//
+//        for ((act, percent) in percentages) {
+//            text += "${getActivityName(act)}: ${(percent * 100).roundToInt()}%\n"
+//        }
+//
+//        // display result
+//        _analysisResultTextSF.value = text
     }
 
     private fun getActivityName(act: ActivityClass): String {
