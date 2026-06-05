@@ -12,9 +12,12 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.five9th.motionlogger.R
 import com.five9th.motionlogger.databinding.ActivityAnalysisBinding
+import com.five9th.motionlogger.domain.entities.WindowPrediction
+import com.five9th.motionlogger.presentation.adapters.WindowBarsAdapter
 import com.five9th.motionlogger.presentation.uimodel.SessionItem
 import com.five9th.motionlogger.presentation.vm.AnalysisViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -56,7 +59,13 @@ class AnalysisActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            viewModel.analysisResultSF.collect(::onAnalysisResultChanged)
+            viewModel.analysisResultTextSF.collect(::onAnalysisResultChanged)
+        }
+
+        lifecycleScope.launch {
+            viewModel.predictionsSF.first().let {
+                onWindowPredictionsAvailable(it)
+            }
         }
     }
 
@@ -81,6 +90,15 @@ class AnalysisActivity : AppCompatActivity() {
 
         binding.llAnalysis.visibility = View.VISIBLE
         binding.tvOutputAnalysis.text = analysisStr
+    }
+
+    private fun onWindowPredictionsAvailable(predictions: List<WindowPrediction>) {
+        // init adapter
+        val adapter = WindowBarsAdapter(predictions) {
+            viewModel.onWindowPredictionClick(it)
+        }
+
+        binding.rvWindowBars.adapter = adapter
     }
 
 
