@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.tensorflow.lite)
     implementation(libs.tensorflow.lite.support)
+    implementation(libs.mpandroidchart)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
