@@ -6,6 +6,16 @@ data class CollectingSession(
 ) {
     val id: Int
         get() = info.id
+
+    fun getWindows(windowSize: Int): List<SampleWindow> =
+        samples
+        .chunked(windowSize)
+        .mapNotNull { list ->
+            if (list.size == windowSize)
+                SampleWindow(list.toList())
+            else
+                null
+        }
 }
 
 data class SessionInfo(
