@@ -42,5 +42,6 @@
     <string name="sensors_info"><u>Sensors info</u></string>
     <string name="error">Error</string>
     <string name="hint_session_keyword">Session keyword</string>
-    <string name="err_forbiden_characters">Only Letters, Digits, and symbols _ . ,</string>
+    <string name="err_forbidden_characters">Only Letters, Digits, and symbols _ . ,</string>
+    <string name="percent_placeholder">%.2f%%</string>
 </resources>

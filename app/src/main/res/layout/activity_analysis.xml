@@ -172,4 +172,21 @@
         tools:text="message output..."
         />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintVertical_bias="0.65"
+
+        android:textSize="22sp"
+        android:text="DEBUG version"
+        android:textColor="@android:color/holo_red_light"
+        android:textStyle="bold"
+        />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

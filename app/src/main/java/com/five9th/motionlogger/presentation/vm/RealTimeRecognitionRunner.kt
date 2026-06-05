@@ -26,6 +26,7 @@ class RealTimeRecognitionRunner @Inject constructor (
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val _currentScoresSF = MutableStateFlow(zeroList)
+    /** Activity order: ["dws", "ups", "wlk", "jog", "std", "sit"] */
     val currentScoresSF = _currentScoresSF.asStateFlow()
 
 

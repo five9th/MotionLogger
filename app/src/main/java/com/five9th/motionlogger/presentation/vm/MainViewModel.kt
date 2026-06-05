@@ -55,6 +55,7 @@ class MainViewModel @Inject constructor (
     private val _sessionListSF = MutableStateFlow<List<SessionInfo>>(listOf())
     val sessionListSF: StateFlow<List<SessionInfo>> = _sessionListSF.asStateFlow()
 
+    /** Activity order: ["dws", "ups", "wlk", "jog", "std", "sit"] */
     val currentActivityScoresSF = realTimeRunner.currentScoresSF
 
 

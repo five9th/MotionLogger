@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:layout_marginHorizontal="72dp"
         android:padding="16dp">
 
         <!-- Row template repeated 6 times -->
@@ -21,13 +23,15 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/activity_dws"/>
+                android:text="@string/activity_dws"
+                style="@style/ActivityLabelText"/>
 
             <TextView
                 android:id="@+id/pct_dws"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0%"/>
+                tools:text="0%"
+                style="@style/ActivityPercentText"/>
         </LinearLayout>
 
         <LinearLayout
@@ -40,13 +44,15 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/activity_ups"/>
+                android:text="@string/activity_ups"
+                style="@style/ActivityLabelText"/>
 
             <TextView
                 android:id="@+id/pct_ups"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0%"/>
+                tools:text="0%"
+                style="@style/ActivityPercentText"/>
         </LinearLayout>
 
         <LinearLayout
@@ -59,13 +65,15 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/activity_wlk"/>
+                android:text="@string/activity_wlk"
+                style="@style/ActivityLabelText"/>
 
             <TextView
                 android:id="@+id/pct_wlk"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0%"/>
+                tools:text="0%"
+                style="@style/ActivityPercentText"/>
         </LinearLayout>
 
         <LinearLayout
@@ -78,13 +86,15 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/activity_jog"/>
+                android:text="@string/activity_jog"
+                style="@style/ActivityLabelText"/>
 
             <TextView
                 android:id="@+id/pct_jog"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0%"/>
+                tools:text="0%"
+                style="@style/ActivityPercentText"/>
         </LinearLayout>
 
         <LinearLayout
@@ -97,13 +107,15 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/activity_std"/>
+                android:text="@string/activity_std"
+                style="@style/ActivityLabelText"/>
 
             <TextView
                 android:id="@+id/pct_std"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0%"/>
+                tools:text="0%"
+                style="@style/ActivityPercentText"/>
         </LinearLayout>
 
         <LinearLayout
@@ -116,13 +128,15 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/activity_sit"/>
+                android:text="@string/activity_sit"
+                style="@style/ActivityLabelText"/>
 
             <TextView
                 android:id="@+id/pct_sit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0%"/>
+                tools:text="0%"
+                style="@style/ActivityPercentText"/>
         </LinearLayout>
 
     </LinearLayout>
