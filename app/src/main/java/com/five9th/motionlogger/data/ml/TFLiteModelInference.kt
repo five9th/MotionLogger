@@ -2,8 +2,10 @@ package com.five9th.motionlogger.data.ml
 
 import android.util.Log
 import com.five9th.motionlogger.domain.entities.ModelOutput
+import com.five9th.motionlogger.domain.entities.N_CLASSES
 import com.five9th.motionlogger.domain.entities.SampleWindow
 import com.five9th.motionlogger.domain.entities.SensorSample
+import com.five9th.motionlogger.domain.entities.WINDOW_SIZE
 import com.five9th.motionlogger.domain.repos.ModelInference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -15,11 +17,6 @@ import javax.inject.Inject
 class TFLiteModelInference @Inject constructor (
     private val provider: ModelFileProvider
 ) : ModelInference {
-
-    companion object {
-        private const val WINDOW_SIZE = 128
-        private const val N_CLASSES = 6
-    }
 
     private val tag = "ML"
 
@@ -58,12 +55,12 @@ class TFLiteModelInference @Inject constructor (
         return ModelOutput(scores = outputBuffer[0].toList())
     }
 
-    // model expects shape (1, 128, 9) -- 128 samples, 9 sensors
-    // model expects sensor order: roll, pitch, yaw, gyro.x/y/z, accel.x/y/z
+    // model expects shape (1, 128, 6) -- 128 samples, 6 sensors
+    // model expects sensor order: gyro.x/y/z, accel.x/y/z
     private fun mapDomainToModelInput(window: SampleWindow): Array<Array<FloatArray>> {
         fun sampleToFloatArray(s: SensorSample): FloatArray {
             return floatArrayOf(
-                s.roll, s.pitch, s.yaw,
+//                s.roll, s.pitch, s.yaw,
                 s.gyroX, s.gyroY, s.gyroZ,
                 s.accX, s.accY, s.accZ
             )

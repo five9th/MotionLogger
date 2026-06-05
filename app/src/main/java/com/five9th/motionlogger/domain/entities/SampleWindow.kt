@@ -1,6 +1,10 @@
 package com.five9th.motionlogger.domain.entities
 
-/** Represents a window of 128 samples. Shape: (128, 9) */
+const val WINDOW_SIZE = 128
+const val N_FEATURES = 6
+const val N_CLASSES = 6
+
+/** Represents a window of 128 samples. Shape: (128, 6) */
 data class SampleWindow(val samples: List<SensorSample>)
 
 /** Output shape: (6,) - probability of a window belonging to each of 6 activity classes

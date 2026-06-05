@@ -69,8 +69,7 @@ class SensorsRepoImpl @Inject constructor (
 
         sensors.linearAcceleration?.let { sensors.sm.registerListener(this, it, periodMicros) }
         sensors.gyroscope?.let { sensors.sm.registerListener(this, it, periodMicros) }
-        sensors.gameRotationVector?.let { sensors.sm.registerListener(this, it, periodMicros) }
-    // TODO: try rotationVector instead (may improve accuracy)
+        sensors.rotationVector?.let { sensors.sm.registerListener(this, it, periodMicros) }
     }
 
     private fun startSampler() {
@@ -129,10 +128,10 @@ class SensorsRepoImpl @Inject constructor (
                 gyrCounter++
                 if (gyrCounter % 50 == 1) Log.d("SENSOR_GYRO", event.values.contentToString())
             }
-            Sensor.TYPE_GAME_ROTATION_VECTOR -> {
+            Sensor.TYPE_GAME_ROTATION_VECTOR, Sensor.TYPE_ROTATION_VECTOR -> {
                 lastEuler = processGameRotationVector(event.values)
                 rotCounter++
-                if (rotCounter % 50 == 1) Log.d("SENSOR_GAME", event.values.contentToString())
+                if (rotCounter % 50 == 1) Log.d("SENSOR_ROT", event.values.contentToString())
             }
         }
     }
