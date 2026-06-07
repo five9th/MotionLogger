@@ -1,5 +1,6 @@
 package com.five9th.motionlogger.domain.usecases.ml
 
+import com.five9th.motionlogger.domain.entities.DISABLE_STAIRS
 import com.five9th.motionlogger.domain.entities.ModelOutput
 import com.five9th.motionlogger.domain.entities.SampleWindow
 import com.five9th.motionlogger.domain.repos.ModelInference
@@ -11,8 +12,10 @@ class AnalyzeWindowUseCase @Inject constructor (
     suspend operator fun invoke(
         window: SampleWindow
     ): ModelOutput {
-        return model
-            .run(window)
-            .adjust()  // stair classes are dominating rn for some reason
+        var res = model.run(window)
+//            .adjust()  // stair classes are dominating rn for some reason
+        if (DISABLE_STAIRS) res = res.combineWalk()
+
+        return res
     }
 }

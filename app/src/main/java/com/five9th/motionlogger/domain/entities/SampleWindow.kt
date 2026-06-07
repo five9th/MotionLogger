@@ -1,8 +1,12 @@
 package com.five9th.motionlogger.domain.entities
 
+import kotlin.math.max
+
 const val WINDOW_SIZE = 128
 const val N_FEATURES = 6
 const val N_CLASSES = 6
+
+const val DISABLE_STAIRS = true // TODO: use settings
 
 /** Represents a window of 128 samples. Shape: (128, 6) */
 data class SampleWindow(val samples: List<SensorSample>)
@@ -40,5 +44,18 @@ data class ModelOutput(val scores: List<Float>) {
 
     fun adjust(): ModelOutput {
         return ModelOutput(List(6) { i -> scores[i] * coefs[i]})
+    }
+
+    // this is temp solution (todo)
+    /** combines dws, ups & wlk chances and puts it as wlk */
+    fun combineWalk(): ModelOutput {
+        return ModelOutput(listOf(
+            0f,
+            0f,
+            max(scores[0], max(scores[1], scores[2])),
+            scores[3],
+            scores[4],
+            scores[5]
+        ))
     }
 }
