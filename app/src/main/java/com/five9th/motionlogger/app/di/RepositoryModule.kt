@@ -4,8 +4,10 @@ import com.five9th.motionlogger.data.repos.FilesRepoImpl
 import com.five9th.motionlogger.data.repos.sensors.SensorsRepoImpl
 import com.five9th.motionlogger.data.repos.SessionsRepoImpl
 import com.five9th.motionlogger.data.ml.TFLiteModelInference
+import com.five9th.motionlogger.data.repos.SchemaRepoImpl
 import com.five9th.motionlogger.domain.repos.FilesRepo
 import com.five9th.motionlogger.domain.repos.ModelInference
+import com.five9th.motionlogger.domain.repos.SchemaRepo
 import com.five9th.motionlogger.domain.repos.SensorsRepo
 import com.five9th.motionlogger.domain.repos.SessionsRepo
 import dagger.Binds
@@ -33,4 +35,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindModelInference(impl: TFLiteModelInference): ModelInference
+
+    @Binds
+    @Singleton
+    abstract fun bindSchemaRepo(impl: SchemaRepoImpl): SchemaRepo
 }
