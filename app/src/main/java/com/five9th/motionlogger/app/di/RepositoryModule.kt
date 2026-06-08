@@ -1,7 +1,7 @@
 package com.five9th.motionlogger.app.di
 
 import com.five9th.motionlogger.data.repos.FilesRepoImpl
-import com.five9th.motionlogger.data.repos.SensorsRepoImpl
+import com.five9th.motionlogger.data.repos.sensors.SensorsRepoImpl
 import com.five9th.motionlogger.data.repos.SessionsRepoImpl
 import com.five9th.motionlogger.data.ml.TFLiteModelInference
 import com.five9th.motionlogger.domain.repos.FilesRepo

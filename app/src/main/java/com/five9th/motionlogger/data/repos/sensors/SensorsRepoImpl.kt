@@ -1,4 +1,4 @@
-package com.five9th.motionlogger.data.repos
+package com.five9th.motionlogger.data.repos.sensors
 
 import android.app.Application
 import android.hardware.Sensor
@@ -8,6 +8,7 @@ import android.hardware.SensorManager
 import android.os.SystemClock
 import android.util.Log
 import com.five9th.motionlogger.domain.entities.SensorSample
+import com.five9th.motionlogger.domain.entities.SensorSchema
 import com.five9th.motionlogger.domain.entities.SensorsInfo
 import com.five9th.motionlogger.domain.repos.SensorsRepo
 import kotlinx.coroutines.CoroutineScope
@@ -29,10 +30,12 @@ class SensorsRepoImpl @Inject constructor (
 ) : SensorsRepo, SensorEventListener {
 
     companion object {
-        private const val SAMPLE_FREQ_HZ = 50
+        private const val SAMPLE_FREQ_HZ = 50  // TODO: move to settings
         private const val MILLIS_IN_SECOND = 1_000
         private const val MICROS_IN_SECOND = 1_000_000
     }
+
+    private val tag = "SensorsRepo"
 
     private val sensors = SensorsBundle(app)
 
@@ -41,10 +44,21 @@ class SensorsRepoImpl @Inject constructor (
     }
 
     private val _flow = MutableSharedFlow<SensorSample>(extraBufferCapacity = 64)
+    override fun getFlow(): Flow<SensorSample> = _flow
 
-    private var lastAccel: FloatArray? = null
-    private var lastGyro: FloatArray? = null
-    private var lastEuler: FloatArray? = null
+    private val mapper = SensorTypeMapper()
+
+    private var currentSchema: SensorSchema? = null
+    private var currentSources = setOf<SensorSource>()
+
+    // example: lastValues[SensorSource.ACCELEROMETER] = [acc_x, acc_y, acc_z]
+    private val lastValues = mutableMapOf<SensorSource, FloatArray>()
+
+    // example: "acc_y" -> lastValues[SensorSource.ACCELEROMETER][1]
+    private fun Map<SensorSource, FloatArray>.getFieldValue(fieldId: String): Float? {
+        val mapping = FieldMapping.MAPPINGS[fieldId] ?: return null
+        return this[mapping.source]?.getOrNull(mapping.index)
+    }
 
     private var startTimestamp = 0L
 
@@ -53,23 +67,29 @@ class SensorsRepoImpl @Inject constructor (
     private val _isCollecting = MutableStateFlow(false)
     override val isCollecting: StateFlow<Boolean> = _isCollecting
 
-    override fun start() {
+    override fun start(schema: SensorSchema) {
         if (isCollecting.value) return
-
         _isCollecting.value = true
+
+        // init by new schema
+        currentSchema = schema
+        currentSources = SensorSource.requiredSources(schema)
+        val sensors = mapper.getRequiredSensors(currentSources)
+
+        registerListeners(sensors)
 
         startTimestamp = SystemClock.elapsedRealtime()
 
-        registerListeners()
         startSampler()
     }
 
-    private fun registerListeners() {
+    private fun registerListeners(sensorTypes: Iterable<Int>) {
         val periodMicros = MICROS_IN_SECOND / SAMPLE_FREQ_HZ
 
-        sensors.linearAcceleration?.let { sensors.sm.registerListener(this, it, periodMicros) }
-        sensors.gyroscope?.let { sensors.sm.registerListener(this, it, periodMicros) }
-        sensors.rotationVector?.let { sensors.sm.registerListener(this, it, periodMicros) }
+        for (type in sensorTypes) {
+            val sensor = sensors.sm.getDefaultSensor(type)  // todo: warn if sensor is null
+            sensors.sm.registerListener(this, sensor, periodMicros)
+        }
     }
 
     private fun startSampler() {
@@ -84,31 +104,53 @@ class SensorsRepoImpl @Inject constructor (
     }
 
     private fun getAndEmitSample() {
-        val a = lastAccel
-        val g = lastGyro
-        val e = lastEuler
-
-        if (a != null && g != null && e != null) {
-            val sample = SensorSample(
-                timestampMs = getSampleTimestamp(),
-                accX = a[0], accY = a[1], accZ = a[2],
-                gyroX = g[0], gyroY = g[1], gyroZ = g[2],
-                roll = e[0], pitch = e[1], yaw = e[2]
-            )
-            _flow.tryEmit(sample)
+        val schema = currentSchema
+        if (schema == null) {
+            Log.w(tag, "Schema is null")
+            return
         }
+
+        val fields = schema.fields
+        val values = FloatArray(fields.size)
+
+        for (i in 0..fields.size) {
+            val field = fields[i]
+            val fieldValue = lastValues.getFieldValue(field.id)
+
+            if (fieldValue == null) {
+                Log.d(tag, "No value for ${field.id}; EmitSample aborted.")
+                return
+            }
+
+            values[i] = fieldValue
+        }
+
+        val sample = SensorSample(
+            timestampMs = getSampleTimestamp(),
+            values = values
+        )
+
+        _flow.tryEmit(sample)
     }
+
+
 
     private fun getSampleTimestamp(): Long = SystemClock.elapsedRealtime() - startTimestamp
 
     override fun stop() {
         _isCollecting.value = false
 
+        clearCollections()
+
         samplingJob?.cancel()
         sensors.sm.unregisterListener(this)
     }
 
-    override fun getFlow(): Flow<SensorSample> = _flow
+    private fun clearCollections() {
+        currentSchema = null
+        currentSources = setOf()
+        lastValues.clear()
+    }
 
 
     // temp log for testing
@@ -116,27 +158,34 @@ class SensorsRepoImpl @Inject constructor (
     private var gyrCounter = 0
     private var rotCounter = 0
 
+    /** Describes the strategy on how the required SensorSource data is actually collected/evaluated.
+     * Tied to [FieldMapping.MAPPINGS] */
     override fun onSensorChanged(event: SensorEvent) {
         when (event.sensor.type) {
             Sensor.TYPE_LINEAR_ACCELERATION -> {
-                lastAccel = event.values.clone()
-                accCounter++
-                if (accCounter % 50 == 1) Log.d("SENSOR_ACCEL", event.values.contentToString())
+                lastValues[SensorSource.LINEAR_ACCELERATION] = event.values.clone()
+                if (accCounter++ % 50 == 1) Log.d("SENSOR_ACCEL", event.values.contentToString())
             }
             Sensor.TYPE_GYROSCOPE -> {
-                lastGyro = event.values.clone()
-                gyrCounter++
-                if (gyrCounter % 50 == 1) Log.d("SENSOR_GYRO", event.values.contentToString())
+                lastValues[SensorSource.GYROSCOPE] = event.values.clone()
+                if (gyrCounter++ % 50 == 1) Log.d("SENSOR_GYRO", event.values.contentToString())
             }
-            Sensor.TYPE_GAME_ROTATION_VECTOR, Sensor.TYPE_ROTATION_VECTOR -> {
-                lastEuler = processGameRotationVector(event.values)
-                rotCounter++
-                if (rotCounter % 50 == 1) Log.d("SENSOR_ROT", event.values.contentToString())
+            Sensor.TYPE_GAME_ROTATION_VECTOR -> { // this sensor type corresponds to two Sources
+                val q = processGameRotationVector(event.values)
+
+                if (SensorSource.GAME_ROTATION_VECTOR in currentSources) {
+                    lastValues[SensorSource.GAME_ROTATION_VECTOR] = q
+                }
+                if (SensorSource.ATTITUDE in currentSources) {
+                    lastValues[SensorSource.GAME_ROTATION_VECTOR] = quaternionToRollPitchYaw(q)
+                }
+
+                if (rotCounter++ % 50 == 1) Log.d("SENSOR_ROT", event.values.contentToString())
             }
+            // TODO: other types
         }
     }
 
-    // TODO: re-check this after the ai
     private fun processGameRotationVector(values: FloatArray): FloatArray {
         val qx = values[0]
         val qy = values[1]
@@ -149,11 +198,10 @@ class SensorsRepoImpl @Inject constructor (
             if (sum > 0) sqrt(sum) else 0f
         }
 
-
-        return quaternionToEuler(floatArrayOf(qx, qy, qz, qw))
+        return floatArrayOf(qx, qy, qz, qw)
     }
 
-    private fun quaternionToEuler(q: FloatArray): FloatArray {
+    private fun quaternionToRollPitchYaw(q: FloatArray): FloatArray {
         // q = [x, y, z, w] from TYPE_GAME_ROTATION_VECTOR
         val rotMat = FloatArray(9)
 
@@ -165,7 +213,6 @@ class SensorsRepoImpl @Inject constructor (
         SensorManager.getOrientation(rotMat, orientation)
 
         // orientation = [yaw (azimuth), pitch, roll] in radians
-        // If you want roll/pitch/yaw in your dataset order, rearrange as needed.
         return floatArrayOf(
             orientation[2],  // roll
             orientation[1],  // pitch
