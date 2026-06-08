@@ -166,9 +166,9 @@ class MainViewModel @Inject constructor (
         return schemaVer
     }
 
+    var userSchema: SensorSchema? = null //temp (todo)
     private fun tryGetSchemaFromUser(): SensorSchema? {
-        //todo
-        return null
+        return userSchema
     }
 
 

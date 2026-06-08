@@ -1,6 +1,7 @@
 package com.five9th.motionlogger.presentation.ui
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.MotionEvent
@@ -87,6 +88,10 @@ class MainActivity : AppCompatActivity() {
         binding.tvSensorInfo.setOnClickListener {
             onInfoClick()
         }
+
+        binding.tvSensorSchema.setOnClickListener {
+            onSchemaClick()
+        }
     }
 
     private fun collectFlows() {
@@ -137,6 +142,11 @@ class MainActivity : AppCompatActivity() {
             infoFlow = mainViewModel.sensorsInfoSF,
             requestInfoCallback = mainViewModel::getSensorsInfo
         )
+    }
+
+    private fun onSchemaClick() {
+        val intent = Intent(this, SensorSchemaActivity::class.java)
+        startActivity(intent)
     }
 
 
