@@ -56,6 +56,7 @@ class FilesRepoMapper {
         }
 
         return SensorSchema(
+            SensorSchema.VERSION_NOT_SET,
             columns
                 .drop(1)
                 .map { SensorField(it) }

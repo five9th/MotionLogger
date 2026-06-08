@@ -4,6 +4,7 @@ import android.os.SystemClock
 import android.util.Log
 import com.five9th.motionlogger.domain.entities.CollectingSession
 import com.five9th.motionlogger.domain.entities.SensorSample
+import com.five9th.motionlogger.domain.entities.SensorSchema
 import com.five9th.motionlogger.domain.entities.SessionInfo
 import com.five9th.motionlogger.domain.usecases.GetLastIdUseCase
 import com.five9th.motionlogger.domain.usecases.ObserveCollectingStateUseCase
@@ -12,6 +13,7 @@ import com.five9th.motionlogger.domain.usecases.SaveLastIdUseCase
 import com.five9th.motionlogger.domain.usecases.SaveSessionUseCase
 import com.five9th.motionlogger.domain.usecases.StartCollectUseCase
 import com.five9th.motionlogger.domain.usecases.StopCollectUseCase
+import com.five9th.motionlogger.domain.usecases.schema.GetSchemaUseCase
 import com.five9th.motionlogger.domain.utils.TimeFormatHelper
 import com.five9th.motionlogger.presentation.uimodel.CollectionStats
 import kotlinx.coroutines.CoroutineScope
@@ -43,7 +45,9 @@ class SensorServiceRunner @Inject constructor (
     private val saveSessionUseCase: SaveSessionUseCase,
 
     private val saveLastIdUseCase: SaveLastIdUseCase,
-    private val getLastIdUseCase: GetLastIdUseCase
+    private val getLastIdUseCase: GetLastIdUseCase,
+
+    private val getSchemaUseCase: GetSchemaUseCase
 ) : ISensorCollector {
 
     private val tag = "SensorService"
@@ -81,6 +85,8 @@ class SensorServiceRunner @Inject constructor (
     private var sessionId = ID_UNDEFINED
     private var readLastIdJob: Job? = null
 
+    private var _schema: SensorSchema? = null
+
     // ---- Methods ----
     init {
         initLastId()
@@ -92,12 +98,15 @@ class SensorServiceRunner @Inject constructor (
         }
     }
 
-    override fun startCollect() {
+    override fun startCollect(schemaVer: Int) {
         if (isCollectingSF.value) return
+
+        val schema = getSchemaUseCase(schemaVer)!!
 
         setIdForNewSession()
 
-        startCollectUseCase()  // tell repo to collect sensor data
+        _schema = schema
+        startCollectUseCase(schema)  // tell repo to collect sensor data
         startCollectJob()  // saving samples from the flow to the list
         startTimerJob()
     }
@@ -239,8 +248,19 @@ class SensorServiceRunner @Inject constructor (
             startTimeInSeconds = TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(startCollectTime),
             stopTimeInSeconds = TimeFormatHelper.unixTimeMillisToTimeOfDaySeconds(stopCollectTime)
         ),
+        getSchema(),
         collectedSamples
     )
+
+    private fun getSchema(): SensorSchema {
+        val schema = _schema
+
+        return if (schema == null) {
+            Log.w(tag, "Schema is null while saving session.")
+            SensorSchema(SensorSchema.VERSION_NOT_SET, listOf()) // return empty schema but at least the saving continues
+        }
+        else schema
+    }
 
     fun cancelScope() {
         scope.cancel()

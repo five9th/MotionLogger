@@ -1,8 +1,9 @@
 package com.five9th.motionlogger.data.ml
 
 import com.five9th.motionlogger.domain.entities.SensorSample
+import com.five9th.motionlogger.domain.entities.SensorSchema
 
-class DataPreprocessor {
+class DataPreprocessor(val schema: SensorSchema) {
     companion object {
         private const val G = 9.81f
 
@@ -30,25 +31,31 @@ class DataPreprocessor {
     }
 
     // Converts accel values: m/s^2 -> g
-    fun convertUnits(s: SensorSample): SensorSample {
-        return s.copy(
-            accX = s.accX / G,
-            accY = s.accY / G,
-            accZ = s.accZ / G,
-        )
+    fun convertAccToG(s: SensorSample): SensorSample {
+        val fields = schema.toString().split(',')
+        val values = s.values
+
+        if (fields.size != values.size) throw RuntimeException("Schemas mismatch")
+
+        for (i in values.indices) {
+            if (fields[i].contains("acc")) values[i] /= G
+        }
+
+        return SensorSample(s.timestampMs, values)
     }
 
     // Applies z-score normalisation to gyro and accel
     fun applyZScore(s: SensorSample): SensorSample {
-        return s.copy(
-            accX = zScore(s.accX, ACC_MEAN_XYZ[0], ACC_STD_XYZ[0]),
-            accY = zScore(s.accX, ACC_MEAN_XYZ[1], ACC_STD_XYZ[1]),
-            accZ = zScore(s.accX, ACC_MEAN_XYZ[2], ACC_STD_XYZ[2]),
-
-            gyroX = zScore(s.gyroX, GYRO_MEAN_XYZ[0], GYRO_STD_XYZ[0]),
-            gyroY = zScore(s.gyroX, GYRO_MEAN_XYZ[1], GYRO_STD_XYZ[1]),
-            gyroZ = zScore(s.gyroX, GYRO_MEAN_XYZ[2], GYRO_STD_XYZ[2]),
-        )
+        TODO()
+//        return s.copy(
+//            accX = zScore(s.accX, ACC_MEAN_XYZ[0], ACC_STD_XYZ[0]),
+//            accY = zScore(s.accX, ACC_MEAN_XYZ[1], ACC_STD_XYZ[1]),
+//            accZ = zScore(s.accX, ACC_MEAN_XYZ[2], ACC_STD_XYZ[2]),
+//
+//            gyroX = zScore(s.gyroX, GYRO_MEAN_XYZ[0], GYRO_STD_XYZ[0]),
+//            gyroY = zScore(s.gyroX, GYRO_MEAN_XYZ[1], GYRO_STD_XYZ[1]),
+//            gyroZ = zScore(s.gyroX, GYRO_MEAN_XYZ[2], GYRO_STD_XYZ[2]),
+//        )
     }
 
     private fun zScore(v: Float, mean: Float, std: Float): Float = (v - mean) / std

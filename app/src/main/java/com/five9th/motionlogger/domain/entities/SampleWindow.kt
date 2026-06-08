@@ -10,7 +10,7 @@ const val DISABLE_STAIRS = true // TODO: use settings
 
 /** Represents a window of 128 samples. Shape: (128, 6) */
 data class SampleWindow(
-    val schema: SensorSchema,   // TODO: change to schemaVersion: Int and get schema by version from a repo to avoid copying
+    val schema: SensorSchema,   // TODO: change to `schemaVersion: Int` and get schema by version from a repo to avoid copying
     val samples: List<SensorSample>
 )
 

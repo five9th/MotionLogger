@@ -71,6 +71,8 @@ class SensorsRepoImpl @Inject constructor (
         if (isCollecting.value) return
         _isCollecting.value = true
 
+        Log.d(tag, "Start collect, schema: '$schema'")
+
         // init by new schema
         currentSchema = schema
         currentSources = SensorSource.requiredSources(schema)

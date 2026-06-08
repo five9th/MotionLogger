@@ -4,7 +4,7 @@ import android.util.Log
 import com.five9th.motionlogger.domain.entities.ModelOutput
 import com.five9th.motionlogger.domain.entities.N_CLASSES
 import com.five9th.motionlogger.domain.entities.SampleWindow
-import com.five9th.motionlogger.domain.entities.SensorSample
+import com.five9th.motionlogger.domain.entities.SensorSchema
 import com.five9th.motionlogger.domain.entities.WINDOW_SIZE
 import com.five9th.motionlogger.domain.repos.ModelInference
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +20,12 @@ class TFLiteModelInference @Inject constructor (
 
     private val tag = "ML"
 
-    private val preprocessor = DataPreprocessor()
+    // Hardcoded for now (todo: get it with the model)
+    private val inputSchema = SensorSchema.fromString(
+        "gyro_x,gyro_y,gyro_z,lin_acc_x,lin_acc_y,lin_acc_z"
+    )
+
+    private val preprocessor = DataPreprocessor(inputSchema)
 
     private var isInterpreterLoaded = false
     private var _interpreter: Interpreter? = null
@@ -41,6 +46,9 @@ class TFLiteModelInference @Inject constructor (
 
     override suspend fun run(window: SampleWindow): ModelOutput {
 
+        if (inputSchema != window.schema)
+            throw RuntimeException("Schemas mismatch: model: '$inputSchema'; window: '${window.schema}'")
+
         val outputBuffer: Array<FloatArray>
 
         withContext(Dispatchers.Default) {
@@ -58,22 +66,14 @@ class TFLiteModelInference @Inject constructor (
     // model expects shape (1, 128, 6) -- 128 samples, 6 sensors
     // model expects sensor order: gyro.x/y/z, accel.x/y/z
     private fun mapDomainToModelInput(window: SampleWindow): Array<Array<FloatArray>> {
-        fun sampleToFloatArray(s: SensorSample): FloatArray {
-            return floatArrayOf(
-//                s.roll, s.pitch, s.yaw,
-                s.gyroX, s.gyroY, s.gyroZ,
-                s.accX, s.accY, s.accZ
-            )
-        }
-
         return Array(1) {
             Array(WINDOW_SIZE) { i ->
                 // maybe optimize this later
-                val s = window.samples[i]
-                val sConv = preprocessor.convertUnits(s)
-                val sNorm = preprocessor.applyZScore(sConv)
+                var s = window.samples[i]
+                s = preprocessor.convertAccToG(s)
+//                s = preprocessor.applyZScore(s) // not impl
 
-                sampleToFloatArray(sNorm)
+                s.values
             }
         }
     }

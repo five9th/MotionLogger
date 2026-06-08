@@ -80,14 +80,14 @@ class SensorCollectionService : Service(), ISensorCollector {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_START -> startCollectionService()
+            ACTION_START -> startCollectionService(intent)
             ACTION_STOP -> stopCollectionService(intent)
             null -> stopSelf()  // if service got restarted (somehow)
         }
         return START_NOT_STICKY
     }
 
-    private fun startCollectionService() {
+    private fun startCollectionService(intent: Intent?) {
         if (!isServiceStarted) {
             startForeground(NOTIFICATION_ID, rebuildNotification())
             isServiceStarted = true
@@ -96,7 +96,9 @@ class SensorCollectionService : Service(), ISensorCollector {
             waitForSaving()
         }
 
-        startCollect()
+        val schemaVer = intent?.getIntExtra(EXTRA_SCHEMA_VER, DEFAULT_SCHEMA_VER_VALUE) ?: DEFAULT_SCHEMA_VER_VALUE
+
+        startCollect(schemaVer)
     }
 
     private fun startUpdNotificationJob() {
@@ -198,8 +200,8 @@ class SensorCollectionService : Service(), ISensorCollector {
 
 
     // ------ ISensorCollector impl by runner ------
-    override fun startCollect() {
-        runner.startCollect()
+    override fun startCollect(schemaVer: Int) {
+        runner.startCollect(schemaVer)
         lock.acquireWakeLock()
     }
 
@@ -219,7 +221,9 @@ class SensorCollectionService : Service(), ISensorCollector {
         private const val ACTION_START = "START_COLLECTION"
         private const val ACTION_STOP = "STOP_COLLECTION"
         private const val EXTRA_KEYWORD = "extra_keyword"
+        private const val EXTRA_SCHEMA_VER = "extra_schema_ver"
         private const val DEFAULT_KEYWORD_VALUE = ""
+        private const val DEFAULT_SCHEMA_VER_VALUE = 0
 
         private const val NOTIFICATION_ID = 100
 
@@ -228,9 +232,10 @@ class SensorCollectionService : Service(), ISensorCollector {
         fun newIntent(context: Context) =
             Intent(context, SensorCollectionService::class.java)
 
-        fun newIntentStart(context: Context) =
+        fun newIntentStart(context: Context, schemaVer: Int) =
             Intent(context, SensorCollectionService::class.java)
                 .setAction(ACTION_START)
+                .putExtra(EXTRA_SCHEMA_VER, schemaVer)
 
         fun newIntentStop(context: Context, sessionKeyWord: String) =
             Intent(context, SensorCollectionService::class.java)

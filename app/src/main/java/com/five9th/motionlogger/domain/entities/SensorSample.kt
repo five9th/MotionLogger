@@ -31,10 +31,29 @@ data class SensorField(
 )
 
 data class SensorSchema(
-//    val version: Int,     // mb later
+    var version: Int,
     val fields: List<SensorField>
 ) {
     val indexById: Map<String, Int> = fields.mapIndexed { index, field ->
         field.id to index
     }.toMap()
+
+    override fun toString(): String =
+        fields.joinToString(",") { it.id }
+
+    val isVersionNotSet = version == VERSION_NOT_SET
+
+    companion object {
+        const val VERSION_NOT_SET = -1
+
+        // example: string = "acc_x,acc_y,acc_z,yaw"
+        fun fromString(value: String): SensorSchema =
+            SensorSchema(
+                version = VERSION_NOT_SET,
+                fields = value.split(',')
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .map(::SensorField)
+            )
+    }
 }
