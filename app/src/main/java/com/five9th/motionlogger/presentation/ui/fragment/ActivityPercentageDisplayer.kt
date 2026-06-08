@@ -13,6 +13,7 @@ class ActivityPercentageDisplayer(
     private val binding: ClassesPercentageBinding,
     private val windowIdx: Int = 0, // <-- make it flow
     private val percentFlow: Flow<List<Float>>? = null,
+    private val messageFlow: Flow<String>? = null,
     private val scope: CoroutineScope? = null,
     private val context: Context = binding.root.context
 ) {
@@ -21,6 +22,12 @@ class ActivityPercentageDisplayer(
         scope!!.launch {
             percentFlow!!.collect{
                 bindScores(it)
+            }
+        }
+
+        scope.launch {
+            messageFlow!!.collect {
+                binding.tvMessage.text = it
             }
         }
     }

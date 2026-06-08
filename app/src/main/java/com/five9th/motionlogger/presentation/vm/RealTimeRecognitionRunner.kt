@@ -4,6 +4,7 @@ import com.five9th.motionlogger.domain.entities.SampleWindow
 import com.five9th.motionlogger.domain.entities.SensorSample
 import com.five9th.motionlogger.domain.usecases.ObserveSensorsUseCase
 import com.five9th.motionlogger.domain.usecases.ml.AnalyzeWindowUseCase
+import com.five9th.motionlogger.domain.usecases.schema.GetCurrentSchemaUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,7 +15,8 @@ import javax.inject.Inject
 
 class RealTimeRecognitionRunner @Inject constructor (
     private val observeSensorsUseCase: ObserveSensorsUseCase,
-    private val analyzeWindowUseCase: AnalyzeWindowUseCase
+    private val analyzeWindowUseCase: AnalyzeWindowUseCase,
+    private val getCurrentSchemaUseCase: GetCurrentSchemaUseCase
 ) {
     private val windowSize = 128
     private val stepSize = 64
@@ -28,6 +30,9 @@ class RealTimeRecognitionRunner @Inject constructor (
     private val _currentScoresSF = MutableStateFlow(zeroList)
     /** Activity order: ["dws", "ups", "wlk", "jog", "std", "sit"] */
     val currentScoresSF = _currentScoresSF.asStateFlow()
+
+    private val _messageSF = MutableStateFlow("")
+    val messageSF = _messageSF.asStateFlow()
 
 
     private var isStarted = false
@@ -57,7 +62,29 @@ class RealTimeRecognitionRunner @Inject constructor (
     }
 
     private suspend fun analyze(samples: List<SensorSample>) {
-        val output = analyzeWindowUseCase(SampleWindow(samples))
-        _currentScoresSF.value = output.scores
+        clearMsg()
+
+        val schema = getCurrentSchemaUseCase()
+        if (schema == null) {
+            setMsg("Current Schema not set")
+            return
+        }
+
+        try {
+            val output = analyzeWindowUseCase(SampleWindow(schema, samples))
+            _currentScoresSF.value = output.scores
+        }
+        catch (e: RuntimeException) {
+            setMsg("Error: ${e.message}")
+        }
+    }
+
+    // temp (todo) ------------
+    private fun setMsg(msg: String) {
+        _messageSF.value = msg
+    }
+
+    private fun clearMsg() {
+        _messageSF.value = ""
     }
 }

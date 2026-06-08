@@ -28,6 +28,7 @@ class RealTimeTabFragment : Fragment() {
             ?: ActivityPercentageDisplayer(
                 binding,
                 percentFlow =  mainViewModel.currentActivityScoresSF,
+                messageFlow = mainViewModel.realTimeRecognitionMsgSF,
                 scope = lifecycleScope
             ).also {
                 _helper = it

@@ -149,5 +149,15 @@
                 style="@style/ActivityPercentText"/>
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/tv_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="20sp"
+            tools:text="Error: schema mismatch"
+            />
+
     </LinearLayout>
 </ScrollView>

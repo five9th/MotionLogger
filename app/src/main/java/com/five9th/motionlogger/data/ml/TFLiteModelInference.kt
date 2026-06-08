@@ -4,9 +4,9 @@ import android.util.Log
 import com.five9th.motionlogger.domain.entities.ModelOutput
 import com.five9th.motionlogger.domain.entities.N_CLASSES
 import com.five9th.motionlogger.domain.entities.SampleWindow
-import com.five9th.motionlogger.domain.entities.SensorSchema
 import com.five9th.motionlogger.domain.entities.WINDOW_SIZE
 import com.five9th.motionlogger.domain.repos.ModelInference
+import com.five9th.motionlogger.domain.usecases.schema.GetSchemaUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -15,15 +15,13 @@ import org.tensorflow.lite.Interpreter
 import javax.inject.Inject
 
 class TFLiteModelInference @Inject constructor (
-    private val provider: ModelFileProvider
+    private val provider: ModelFileProvider,
+    getSchemaUseCase: GetSchemaUseCase  // <-- temp solution (todo)
 ) : ModelInference {
 
     private val tag = "ML"
 
-    // Hardcoded for now (todo: get it with the model)
-    private val inputSchema = SensorSchema.fromString(
-        "gyro_x,gyro_y,gyro_z,lin_acc_x,lin_acc_y,lin_acc_z"
-    )
+    private val inputSchema = getSchemaUseCase(0)!! // just get default
 
     private val preprocessor = DataPreprocessor(inputSchema)
 
