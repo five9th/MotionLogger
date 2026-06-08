@@ -9,7 +9,10 @@ const val N_CLASSES = 6
 const val DISABLE_STAIRS = true // TODO: use settings
 
 /** Represents a window of 128 samples. Shape: (128, 6) */
-data class SampleWindow(val samples: List<SensorSample>)
+data class SampleWindow(
+    val schema: SensorSchema,   // TODO: change to schemaVersion: Int and get schema by version from a repo to avoid copying
+    val samples: List<SensorSample>
+)
 
 /** Output shape: (6,) - probability of a window belonging to each of 6 activity classes
  * ACT_LABELS = ["dws", "ups", "wlk", "jog", "std", "sit"] */

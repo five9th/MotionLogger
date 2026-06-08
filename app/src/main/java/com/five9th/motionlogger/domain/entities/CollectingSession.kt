@@ -2,6 +2,7 @@ package com.five9th.motionlogger.domain.entities
 
 data class CollectingSession(
     val info: SessionInfo,
+    val schema: SensorSchema,
     val samples: List<SensorSample>,
 ) {
     val id: Int
@@ -12,7 +13,10 @@ data class CollectingSession(
         .chunked(windowSize)
         .mapNotNull { list ->
             if (list.size == windowSize)
-                SampleWindow(list.toList())
+                SampleWindow(
+                    schema,
+                    list.toList()
+                )
             else
                 null
         }
