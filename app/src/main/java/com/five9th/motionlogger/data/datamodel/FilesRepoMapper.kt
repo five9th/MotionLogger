@@ -3,24 +3,65 @@ package com.five9th.motionlogger.data.datamodel
 import com.five9th.motionlogger.data.repos.FilesRepoImpl.Companion.FILENAME_PATTERN
 import com.five9th.motionlogger.data.repos.FilesRepoImpl.Companion.FILENAME_REGEX
 import com.five9th.motionlogger.domain.entities.CollectingSession
+import com.five9th.motionlogger.domain.entities.SensorField
+import com.five9th.motionlogger.domain.entities.SensorSchema
 import com.five9th.motionlogger.domain.entities.SessionInfo
 import com.five9th.motionlogger.domain.utils.TimeFormatHelper
 
-class RepoMapper {
+class FilesRepoMapper {
 
     fun mapDomainToFileModel(session: CollectingSession): SessionCSVModel {
         return SessionCSVModel(
             makeSessionFilename(session.info),
-            listOf("timestamp","ax","ay","az","gx","gy","gz","roll","pitch","yaw"), // hardcoded for now
+            session.schema.toCsvHeader(),
             session.samples
         )
     }
 
     fun mapFileModelToDomain(csvModel: SessionCSVModel): CollectingSession? {
         val info = parseSessionFilename(csvModel.filename) ?: return null
+        val schema = schemaFromCsvHeader(csvModel.header)
 
-        return CollectingSession(info, csvModel.samples)
+        return CollectingSession(info, schema, csvModel.samples)
     }
+
+    private fun SensorSchema.toCsvHeader(
+        timestampColumn: String = "timestamp"
+    ): String {
+        return buildString {
+            append(timestampColumn)
+
+            for (field in fields) {
+                append(',')
+                append(field.id)
+            }
+        }
+    }
+
+    private fun schemaFromCsvHeader(
+        header: String,
+        timestampColumn: String = "timestamp"
+    ): SensorSchema {
+
+        val columns = header
+            .split(',')
+            .map { it.trim() }
+
+        require(columns.isNotEmpty()) {
+            "CSV header is empty"
+        }
+
+        require(columns.first() == timestampColumn) {
+            "First column must be '$timestampColumn'"
+        }
+
+        return SensorSchema(
+            columns
+                .drop(1)
+                .map { SensorField(it) }
+        )
+    }
+
 
     private fun makeSessionFilename(sessionInfo: SessionInfo): String {
         val id = sessionInfo.id
