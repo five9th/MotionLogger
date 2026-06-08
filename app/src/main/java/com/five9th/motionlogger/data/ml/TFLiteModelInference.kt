@@ -45,7 +45,9 @@ class TFLiteModelInference @Inject constructor (
     override suspend fun run(window: SampleWindow): ModelOutput {
 
         if (inputSchema != window.schema)
-            throw RuntimeException("Schemas mismatch: model: '$inputSchema'; window: '${window.schema}'")
+            throw RuntimeException(
+                "Schemas mismatch: model: [${inputSchema.version}] '$inputSchema';\n" +
+                        "window: [${inputSchema.version}] '${window.schema}'")
 
         val outputBuffer: Array<FloatArray>
 
