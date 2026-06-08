@@ -78,6 +78,9 @@ class SensorsRepoImpl @Inject constructor (
         currentSources = SensorSource.requiredSources(schema)
         val sensors = mapper.getRequiredSensors(currentSources)
 
+        Log.d(tag, "currentSources: $currentSources")
+        Log.d(tag, "sensor types: $sensors")
+
         registerListeners(sensors)
 
         startTimestamp = SystemClock.elapsedRealtime()
@@ -89,8 +92,14 @@ class SensorsRepoImpl @Inject constructor (
         val periodMicros = MICROS_IN_SECOND / SAMPLE_FREQ_HZ
 
         for (type in sensorTypes) {
-            val sensor = sensors.sm.getDefaultSensor(type)  // todo: warn if sensor is null
-            sensors.sm.registerListener(this, sensor, periodMicros)
+            val sensor = sensors.sm.getDefaultSensor(type)
+
+            if (sensor == null) {
+                Log.w(tag, "sensor [$type] is null")
+            }
+
+            val res = sensors.sm.registerListener(this, sensor, periodMicros)
+            Log.d(tag, "registered sensor [$type]: $res")
         }
     }
 
@@ -115,7 +124,7 @@ class SensorsRepoImpl @Inject constructor (
         val fields = schema.fields
         val values = FloatArray(fields.size)
 
-        for (i in 0..fields.size) {
+        for (i in fields.indices) {
             val field = fields[i]
             val fieldValue = lastValues.getFieldValue(field.id)
 
@@ -159,36 +168,47 @@ class SensorsRepoImpl @Inject constructor (
     private var accCounter = 0
     private var gyrCounter = 0
     private var rotCounter = 0
+    private val logEvery = 10
 
     /** Describes the strategy on how the required SensorSource data is actually collected/evaluated.
      * Tied to [FieldMapping.MAPPINGS] */
     override fun onSensorChanged(event: SensorEvent) {
+//        Log.d(tag, "============= onSensorChanged: ${event.sensor.type}")
         when (event.sensor.type) {
             Sensor.TYPE_LINEAR_ACCELERATION -> {
                 lastValues[SensorSource.LINEAR_ACCELERATION] = event.values.clone()
-                if (accCounter++ % 50 == 1) Log.d("SENSOR_ACCEL", event.values.contentToString())
+                if (accCounter++ % logEvery == 1) Log.d("SENSOR_ACCEL", event.values.contentToString())
             }
             Sensor.TYPE_GYROSCOPE -> {
                 lastValues[SensorSource.GYROSCOPE] = event.values.clone()
-                if (gyrCounter++ % 50 == 1) Log.d("SENSOR_GYRO", event.values.contentToString())
+                if (gyrCounter++ % logEvery == 1) Log.d("SENSOR_GYRO", event.values.contentToString())
             }
-            Sensor.TYPE_GAME_ROTATION_VECTOR -> { // this sensor type corresponds to two Sources
-                val q = processGameRotationVector(event.values)
+            Sensor.TYPE_GAME_ROTATION_VECTOR -> {
+                val q = processRotationVector(event.values)
 
                 if (SensorSource.GAME_ROTATION_VECTOR in currentSources) {
                     lastValues[SensorSource.GAME_ROTATION_VECTOR] = q
                 }
+
+                if (rotCounter++ % logEvery == 1) Log.d("SENSOR_ROT", event.values.contentToString())
+            }
+            Sensor.TYPE_ROTATION_VECTOR -> { // this sensor type corresponds to two Sources
+                val q = processRotationVector(event.values)
+
+                if (SensorSource.ROTATION_VECTOR in currentSources) {
+                    lastValues[SensorSource.ROTATION_VECTOR] = q
+                }
                 if (SensorSource.ATTITUDE in currentSources) {
-                    lastValues[SensorSource.GAME_ROTATION_VECTOR] = quaternionToRollPitchYaw(q)
+                    lastValues[SensorSource.ATTITUDE] = quaternionToRollPitchYaw(q)
                 }
 
-                if (rotCounter++ % 50 == 1) Log.d("SENSOR_ROT", event.values.contentToString())
+                if (rotCounter++ % logEvery == 1) Log.d("SENSOR_ROT", event.values.contentToString())
             }
             // TODO: other types
         }
     }
 
-    private fun processGameRotationVector(values: FloatArray): FloatArray {
+    private fun processRotationVector(values: FloatArray): FloatArray {
         val qx = values[0]
         val qy = values[1]
         val qz = values[2]
