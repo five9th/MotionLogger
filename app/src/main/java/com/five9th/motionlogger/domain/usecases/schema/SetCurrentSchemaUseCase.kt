@@ -7,7 +7,7 @@ import javax.inject.Inject
 class SetCurrentSchemaUseCase @Inject constructor (
     private val repo: SchemaRepo
 ) {
-    operator fun invoke(schema: SensorSchema) {
+    operator fun invoke(schema: SensorSchema?) {
         return repo.setCurrentSchema(schema)
     }
 }

@@ -1,11 +1,14 @@
 package com.five9th.motionlogger.data.repos
 
+import android.util.Log
 import com.five9th.motionlogger.domain.entities.SensorField
 import com.five9th.motionlogger.domain.entities.SensorSchema
 import com.five9th.motionlogger.domain.repos.SchemaRepo
 import javax.inject.Inject
 
 class SchemaRepoImpl @Inject constructor() : SchemaRepo {
+
+    private val tag = "SchemaRepo"
 
     private val defaultSchema = SensorSchema(0, listOf(
         SensorField("roll"), SensorField("pitch"), SensorField("yaw"),
@@ -24,8 +27,9 @@ class SchemaRepoImpl @Inject constructor() : SchemaRepo {
 
     override fun getCurrentSchema() = currentSchema
 
-    override fun setCurrentSchema(schema: SensorSchema) {
+    override fun setCurrentSchema(schema: SensorSchema?) {
         currentSchema = schema
+        Log.d(tag, "set schema: $schema")
     }
 
     override fun putSchema(schema: SensorSchema) {
@@ -35,6 +39,8 @@ class SchemaRepoImpl @Inject constructor() : SchemaRepo {
             highestVersion = schema.version  // fighting the collisions (sort of)
 
         schemas[schema.version] = schema
+
+        Log.d(tag, "put schema: [${schema.version}] '$schema'")
     }
 
     override fun getSchema(version: Int): SensorSchema? {

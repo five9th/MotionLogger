@@ -5,29 +5,18 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.five9th.motionlogger.R
-import com.five9th.motionlogger.databinding.ActivityMainBinding
+import androidx.lifecycle.lifecycleScope
 import com.five9th.motionlogger.databinding.ActivitySensorSchemaBinding
-import com.five9th.motionlogger.domain.entities.SensorField
-import com.five9th.motionlogger.domain.entities.SensorSchema
-import com.five9th.motionlogger.presentation.vm.MainViewModel
+import com.five9th.motionlogger.presentation.vm.SensorSchemaViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class SensorSchemaActivity : AppCompatActivity() {
-
-    private val availableFields = listOf(
-        "acc_x", "acc_y", "acc_z",
-        "gyro_x", "gyro_y", "gyro_z",
-        "mag_x", "mag_y", "mag_z",
-        "lin_acc_x", "lin_acc_y", "lin_acc_z",
-        "gravity_x", "gravity_y", "gravity_z",
-        "roll", "pitch", "yaw"
-    )
 
     private lateinit var binding: ActivitySensorSchemaBinding
 
-    private val mainViewModel: MainViewModel by viewModels()
+    private val viewModel: SensorSchemaViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,56 +25,41 @@ class SensorSchemaActivity : AppCompatActivity() {
         binding = ActivitySensorSchemaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-
-
         populateAvailableFields()
         setListeners()
+        collectFlows()
     }
 
 
     private fun populateAvailableFields() {
-        binding.tvAvailableFields.text =
+        binding.tvAvailableFields.text =  // <-- temp solution (todo)
             "Available fields:\n\n" +
-                    availableFields.joinToString(", ")
+                    viewModel.getAvailableFields().joinToString(", ")
     }
 
     private fun setListeners() {
         binding.btnSave.setOnClickListener {
-            val text = binding.etSchema.text.toString()
-            val res = parseSchema(text)
-
-            if (res.isFailure) {
-                show("[error] ${res.exceptionOrNull()?.message}")
-            }
-            else if (res.isSuccess) {
-                val s = res.getOrDefault(null)
-                mainViewModel.userSchema = s
-                show("Schema updated (${s?.fields?.size} fields)")
-            }
+            onSaveBtnClick()
         }
     }
 
-    private fun parseSchema(text: String): Result<SensorSchema> {
-        val ids = text.split(',')
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-
-        val invalid = ids.filter { it !in availableFields }
-
-        if (invalid.isNotEmpty()) {
-            return Result.failure(
-                IllegalArgumentException(
-                    "Unknown fields: ${invalid.joinToString(", ")}"
-                )
-            )
+    private fun collectFlows() {
+        lifecycleScope.launch {
+            viewModel.messagesSF.collect(::showMsg)
         }
-
-        return Result.success(
-            SensorSchema(SensorSchema.VERSION_NOT_SET, ids.map(::SensorField))
-        )
     }
 
-    private fun show(m: String) {
-        Toast.makeText(this, m, Toast.LENGTH_LONG).show()
+    private fun onSaveBtnClick() {
+        val schemaText = binding.etSchema.text.toString()
+
+        val success = viewModel.setSchemaFromText(schemaText)
+
+        if (success) {
+//            finish()
+        }
+    }
+
+    private fun showMsg(msg: String) {
+        Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
     }
 }
