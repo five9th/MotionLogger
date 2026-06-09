@@ -55,7 +55,7 @@ class SensorSchemaActivity : AppCompatActivity() {
         val success = viewModel.setSchemaFromText(schemaText)
 
         if (success) {
-//            finish()
+            finish()
         }
     }
 

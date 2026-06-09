@@ -38,6 +38,8 @@ data class SensorSchema(
         field.id to index
     }.toMap()
 
+    val isVersionNotSet = version == VERSION_NOT_SET
+
     override fun toString(): String =
         fields.joinToString(",") { it.id }
 
@@ -54,7 +56,7 @@ data class SensorSchema(
         return fields.hashCode()
     }
 
-    val isVersionNotSet = version == VERSION_NOT_SET
+    fun toDescriptionStr(): String = "[${this.version}] '$this'"
 
     companion object {
         const val VERSION_NOT_SET = -1

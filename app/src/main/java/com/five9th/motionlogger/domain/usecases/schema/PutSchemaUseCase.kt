@@ -7,7 +7,7 @@ import javax.inject.Inject
 class PutSchemaUseCase @Inject constructor (
     private val repo: SchemaRepo
 ) {
-    operator fun invoke(schema: SensorSchema) {
+    operator fun invoke(schema: SensorSchema): Int {
         return repo.putSchema(schema)
     }
 }

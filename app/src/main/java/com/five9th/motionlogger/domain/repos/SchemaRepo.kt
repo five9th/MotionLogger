@@ -7,6 +7,6 @@ interface SchemaRepo {
     fun getCurrentSchema(): SensorSchema?
     fun setCurrentSchema(schema: SensorSchema?)
 
-    fun putSchema(schema: SensorSchema)
+    fun putSchema(schema: SensorSchema): Int
     fun getSchema(version: Int): SensorSchema?
 }

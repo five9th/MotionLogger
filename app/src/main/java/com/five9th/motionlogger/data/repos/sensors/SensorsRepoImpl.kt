@@ -175,6 +175,7 @@ class SensorsRepoImpl @Inject constructor (
     override fun onSensorChanged(event: SensorEvent) {
 //        Log.d(tag, "============= onSensorChanged: ${event.sensor.type}")
         when (event.sensor.type) {
+            Sensor.TYPE_ACCELEROMETER -> lastValues[SensorSource.ACCELEROMETER] = event.values.clone()
             Sensor.TYPE_LINEAR_ACCELERATION -> {
                 lastValues[SensorSource.LINEAR_ACCELERATION] = event.values.clone()
                 if (accCounter++ % logEvery == 1) Log.d("SENSOR_ACCEL", event.values.contentToString())

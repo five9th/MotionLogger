@@ -6,6 +6,7 @@ import com.five9th.motionlogger.domain.entities.SensorSchema
 import com.five9th.motionlogger.domain.repos.SchemaRepo
 import javax.inject.Inject
 
+// TODO: this repo needs an overhaul
 class SchemaRepoImpl @Inject constructor() : SchemaRepo {
 
     private val tag = "SchemaRepo"
@@ -16,7 +17,7 @@ class SchemaRepoImpl @Inject constructor() : SchemaRepo {
         SensorField("lin_acc_x"), SensorField("lin_acc_y"), SensorField("lin_acc_z"),
     ))
 
-    private var currentSchema: SensorSchema? = null
+    private var currentSchemaVer = 0
 
     private val schemas = mutableMapOf<Int, SensorSchema>(
         0 to defaultSchema
@@ -25,14 +26,22 @@ class SchemaRepoImpl @Inject constructor() : SchemaRepo {
 
     override fun getDefaultSchema() = defaultSchema
 
-    override fun getCurrentSchema() = currentSchema
+    override fun getCurrentSchema() = schemas[currentSchemaVer]
 
     override fun setCurrentSchema(schema: SensorSchema?) {
-        currentSchema = schema
-        Log.d(tag, "set schema: $schema")
+        val version = if (schema == null) {
+            SensorSchema.VERSION_NOT_SET
+        } else {
+            putSchema(schema)
+        }
+
+        currentSchemaVer = version
+
+//        schema?.version = version
+        Log.d(tag, "set current schema: ${schema?.toDescriptionStr()}")
     }
 
-    override fun putSchema(schema: SensorSchema) {
+    override fun putSchema(schema: SensorSchema): Int {
         if (schema.isVersionNotSet)
             schema.version = getNewVersion()
         else if (schema.version > highestVersion)
@@ -40,7 +49,8 @@ class SchemaRepoImpl @Inject constructor() : SchemaRepo {
 
         schemas[schema.version] = schema
 
-        Log.d(tag, "put schema: [${schema.version}] '$schema'")
+        Log.d(tag, "put schema: ${schema.toDescriptionStr()}")
+        return schema.version
     }
 
     override fun getSchema(version: Int): SensorSchema? {

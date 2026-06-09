@@ -8,17 +8,14 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
-import com.five9th.motionlogger.domain.entities.SensorSchema
 import com.five9th.motionlogger.domain.entities.SensorsInfo
 import com.five9th.motionlogger.domain.entities.SessionInfo
 import com.five9th.motionlogger.domain.usecases.GetSensorsInfoUseCase
 import com.five9th.motionlogger.domain.usecases.ObserveSessionListUseCase
 import com.five9th.motionlogger.domain.usecases.ReloadSavedSessionsUseCase
-import com.five9th.motionlogger.domain.usecases.schema.GetDefaultSchemaUseCase
-import com.five9th.motionlogger.domain.usecases.schema.PutSchemaUseCase
-import com.five9th.motionlogger.domain.usecases.schema.SetCurrentSchemaUseCase
-import com.five9th.motionlogger.presentation.uimodel.CollectionStats
+import com.five9th.motionlogger.domain.usecases.schema.GetCurrentSchemaUseCase
 import com.five9th.motionlogger.presentation.service.SensorCollectionService
+import com.five9th.motionlogger.presentation.uimodel.CollectionStats
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,9 +32,7 @@ class MainViewModel @Inject constructor (
     private val reloadSavedSessionsUseCase: ReloadSavedSessionsUseCase,
     private val observeSessionListUseCase: ObserveSessionListUseCase,
 
-    private val putSchemaUseCase: PutSchemaUseCase,
-    private val setCurrentSchemaUseCase: SetCurrentSchemaUseCase,
-    private val getDefaultSchemaUseCase: GetDefaultSchemaUseCase,
+    private val getCurrentSchemaUseCase: GetCurrentSchemaUseCase,
 
     realTimeRunner: RealTimeRecognitionRunner,
     application: Application
@@ -146,31 +141,6 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    // ---- schema ----
-    private fun getSchemaVer(): Int {
-        val schema = tryGetSchemaFromUser()
-
-        val schemaVer = if (schema != null) {
-            putSchemaUseCase(schema)
-            setCurrentSchemaUseCase(schema)
-
-            schema.version
-        }
-        else {
-            val defSchema = getDefaultSchemaUseCase()
-            setCurrentSchemaUseCase(defSchema)
-
-            0 // default schema
-        }
-
-        return schemaVer
-    }
-
-    var userSchema: SensorSchema? = null //temp (todo)
-    private fun tryGetSchemaFromUser(): SensorSchema? {
-        return userSchema
-    }
-
 
     // ---- Public methods for Activity ----
 
@@ -187,11 +157,11 @@ class MainViewModel @Inject constructor (
     fun startCollect() {
         if (isCollectingSF.value) return
 
-        val schemaVer = getSchemaVer()
+        val schemaVer = getCurrentSchemaUseCase()?.version
         Log.d(tag, "Got schema version: $schemaVer")
 
         // Start as foreground service
-        val intent = SensorCollectionService.newIntentStart(application, schemaVer)
+        val intent = SensorCollectionService.newIntentStart(application, schemaVer!!)
         application.startForegroundService(intent)
 
         // Also bind to get updates

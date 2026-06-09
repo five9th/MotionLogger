@@ -52,6 +52,14 @@ class SensorSchemaViewModel @Inject constructor (
             .map { it.trim() }
             .filter { it.isNotEmpty() }
 
+        if (ids.isEmpty()) {
+            return Result.failure(
+                IllegalArgumentException(
+                    "Input is empty"
+                )
+            )
+        }
+
         val invalid = ids.filter { it !in availableFields }
 
         if (invalid.isNotEmpty()) {
