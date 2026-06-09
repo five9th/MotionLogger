@@ -8,7 +8,7 @@ import javax.inject.Inject
 class SchemaRepoImpl @Inject constructor() : SchemaRepo {
 
     private val defaultSchema = SensorSchema(0, listOf(
-//        SensorField("roll"), SensorField("pitch"), SensorField("yaw"),
+        SensorField("roll"), SensorField("pitch"), SensorField("yaw"),
         SensorField("gyro_x"), SensorField("gyro_y"), SensorField("gyro_z"),
         SensorField("lin_acc_x"), SensorField("lin_acc_y"), SensorField("lin_acc_z"),
     ))

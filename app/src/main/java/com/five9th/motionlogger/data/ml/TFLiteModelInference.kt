@@ -4,74 +4,79 @@ import android.util.Log
 import com.five9th.motionlogger.domain.entities.ModelOutput
 import com.five9th.motionlogger.domain.entities.N_CLASSES
 import com.five9th.motionlogger.domain.entities.SampleWindow
+import com.five9th.motionlogger.domain.entities.SensorSchema
 import com.five9th.motionlogger.domain.entities.WINDOW_SIZE
 import com.five9th.motionlogger.domain.repos.ModelInference
-import com.five9th.motionlogger.domain.usecases.schema.GetSchemaUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import org.tensorflow.lite.Interpreter
 import javax.inject.Inject
 
 class TFLiteModelInference @Inject constructor (
     private val provider: ModelFileProvider,
-    getSchemaUseCase: GetSchemaUseCase  // <-- temp solution (todo)
 ) : ModelInference {
 
     private val tag = "ML"
 
-    private val inputSchema = getSchemaUseCase(0)!! // just get default
+    private var isModelLoaded = false
+    private var _model: MLModel? = null
 
-    private val preprocessor = DataPreprocessor(inputSchema)
+    private fun getModel(): MLModel
+        = if (!isModelLoaded || _model == null) loadModel() else _model!!
 
-    private var isInterpreterLoaded = false
-    private var _interpreter: Interpreter? = null
+    private fun loadModel(): MLModel { // must be called off main thread
+        val mlModel = provider.getModel()
 
-    private fun getInterpreter(): Interpreter
-        = if (!isInterpreterLoaded || _interpreter == null) loadInterpreter() else _interpreter!!
+        _model = mlModel
+        isModelLoaded = true
 
-    private fun loadInterpreter(): Interpreter { // must be called off main thread
-        val interpreter = provider.getInterpreter()
-
-        _interpreter = interpreter
-        isInterpreterLoaded = true
-
-        return interpreter
+        return mlModel
     }
 
     private val mutex = Mutex()
 
     override suspend fun run(window: SampleWindow): ModelOutput {
-
-        if (inputSchema != window.schema)
-            throw RuntimeException(
-                "Schemas mismatch: model: [${inputSchema.version}] '$inputSchema';\n" +
-                        "window: [${inputSchema.version}] '${window.schema}'")
-
         val outputBuffer: Array<FloatArray>
 
         withContext(Dispatchers.Default) {
             mutex.withLock {
-                val inputBuffer = mapDomainToModelInput(window)  // shape (1, 128, 9)
+                val schema = getModel().schema
+
+                checkSchema(modelSchema =  schema, dataSchema =  window.schema)
+
+                val preprocessor = DataPreprocessor(schema)
+
+                val inputBuffer = mapDomainToModelInput(window, preprocessor)  // shape (1, 128, 6)
                 outputBuffer = createOutputBuffer()    // shape (1, 6)
 
-                getInterpreter().run(inputBuffer, outputBuffer)
+                getModel().interpreter.run(inputBuffer, outputBuffer)
             }
         }
 
         return ModelOutput(scores = outputBuffer[0].toList())
     }
 
+    private fun checkSchema(modelSchema: SensorSchema, dataSchema: SensorSchema) {
+        if (modelSchema != dataSchema)
+            throw RuntimeException(
+                "Schemas mismatch: model: [${modelSchema.version}] '$modelSchema';\n" +
+                        "window: [${dataSchema.version}] '${dataSchema}'")
+    }
+
     // model expects shape (1, 128, 6) -- 128 samples, 6 sensors
     // model expects sensor order: gyro.x/y/z, accel.x/y/z
-    private fun mapDomainToModelInput(window: SampleWindow): Array<Array<FloatArray>> {
+    private fun mapDomainToModelInput(
+        window: SampleWindow,
+        preprocessor: DataPreprocessor
+    ): Array<Array<FloatArray>> {
+
         return Array(1) {
             Array(WINDOW_SIZE) { i ->
                 // maybe optimize this later
                 var s = window.samples[i]
                 s = preprocessor.convertAccToG(s)
-//                s = preprocessor.applyZScore(s) // not impl
+//                s = preprocessor.applyZScore(s) // not impl yet
 
                 s.values
             }
@@ -82,10 +87,10 @@ class TFLiteModelInference @Inject constructor (
     private fun createOutputBuffer() = Array(1) { FloatArray(N_CLASSES) }
 
     override fun close() {
-        Log.d(tag, "Interpreter closing requested; interpreter is null: ${_interpreter == null};")
+        Log.d(tag, "Interpreter closing requested; interpreter is null: ${_model == null};")
 
-        _interpreter?.close()
-        _interpreter = null
-        isInterpreterLoaded = false
+        _model?.interpreter?.close()
+        _model = null
+        isModelLoaded = false
     }
 }
