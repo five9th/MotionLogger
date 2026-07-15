@@ -1,9 +1,9 @@
 package com.five9th.motionlogger.presentation.ui
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -17,12 +17,11 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.five9th.motionlogger.R
 import com.five9th.motionlogger.databinding.ActivityMainBinding
-import com.five9th.motionlogger.domain.entities.SessionInfo
 import com.five9th.motionlogger.domain.utils.TimeFormatHelper
-import com.five9th.motionlogger.presentation.adapters.SessionInfoAdapter
+import com.five9th.motionlogger.presentation.adapters.MainPagerAdapter
 import com.five9th.motionlogger.presentation.uimodel.CollectionStats
-import com.five9th.motionlogger.presentation.uimodel.UiMapper
 import com.five9th.motionlogger.presentation.vm.MainViewModel
+import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -36,8 +35,6 @@ class MainActivity : AppCompatActivity() {
     private val mainViewModel: MainViewModel by viewModels()
 
     private lateinit var binding: ActivityMainBinding
-
-    private lateinit var adapter: SessionInfoAdapter
 
     private lateinit var keywordValidator: KeywordValidator
 
@@ -56,17 +53,23 @@ class MainActivity : AppCompatActivity() {
 
         keywordValidator = KeywordValidator(binding.tilKeyword)
 
-        initAdapter()
+        initTabs()
         initViewModel()
         setListeners()
         collectFlows()
     }
 
-    private fun initAdapter() {
-        adapter = SessionInfoAdapter(UiMapper(this))
-        adapter.onClickListener = ::onItemClick
 
-        binding.rvSessionList.adapter = adapter
+    private fun initTabs() {
+        binding.mainViewPager.adapter = MainPagerAdapter(this)
+
+        TabLayoutMediator(binding.mainTabLayout, binding.mainViewPager) { tab, position ->
+            tab.text = when (position) { //(todo)
+                0 -> "Session List"
+                1 -> "Real-time"
+                else -> null
+            }
+        }.attach()
     }
 
     private fun initViewModel() {
@@ -85,6 +88,10 @@ class MainActivity : AppCompatActivity() {
         binding.tvSensorInfo.setOnClickListener {
             onInfoClick()
         }
+
+        binding.tvSensorSchema.setOnClickListener {
+            onSchemaClick()
+        }
     }
 
     private fun collectFlows() {
@@ -94,10 +101,6 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             mainViewModel.collectionStatsSF.collect(::onCollectionStatsChanged)
-        }
-
-        lifecycleScope.launch {
-            mainViewModel.sessionListSF.collect(::onSessionListChanged)
         }
     }
 
@@ -117,18 +120,8 @@ class MainActivity : AppCompatActivity() {
             Locale.getDefault(), "%d", stats.samplesCount)
     }
 
-    private fun onSessionListChanged(list: List<SessionInfo>) {
-        adapter.submitList(list)
-    }
 
     // ---- Click ----
-    private fun onItemClick(item: SessionInfo) {
-        Log.d(tag, "Item click: $item")
-
-        val intent = AnalysisActivity.newIntent(this, item.id)
-        startActivity(intent)
-    }
-
     private fun onStartClick() {
         checkPermissionsAndStartCollect()
     }
@@ -149,6 +142,11 @@ class MainActivity : AppCompatActivity() {
             infoFlow = mainViewModel.sensorsInfoSF,
             requestInfoCallback = mainViewModel::getSensorsInfo
         )
+    }
+
+    private fun onSchemaClick() {
+        val intent = Intent(this, SensorSchemaActivity::class.java)
+        startActivity(intent)
     }
 
 

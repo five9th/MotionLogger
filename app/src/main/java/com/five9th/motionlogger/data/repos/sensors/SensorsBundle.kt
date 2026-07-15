@@ -1,4 +1,4 @@
-package com.five9th.motionlogger.data.repos
+package com.five9th.motionlogger.data.repos.sensors
 
 import android.content.Context
 import android.hardware.Sensor

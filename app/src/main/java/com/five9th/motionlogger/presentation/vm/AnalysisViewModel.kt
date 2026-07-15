@@ -2,6 +2,7 @@ package com.five9th.motionlogger.presentation.vm
 
 import android.app.Application
 import android.util.Log
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.application
@@ -9,16 +10,25 @@ import androidx.lifecycle.viewModelScope
 import com.five9th.motionlogger.R
 import com.five9th.motionlogger.domain.entities.ActivityClass
 import com.five9th.motionlogger.domain.entities.CollectingSession
-import com.five9th.motionlogger.domain.usecases.AnalyzeSessionUseCase
+import com.five9th.motionlogger.domain.entities.SampleWindow
+import com.five9th.motionlogger.domain.entities.WindowPrediction
+import com.five9th.motionlogger.domain.usecases.ml.AnalyzeSessionUseCase
 import com.five9th.motionlogger.domain.usecases.GetSessionInfoUseCase
 import com.five9th.motionlogger.domain.usecases.GetSessionUseCase
+import com.five9th.motionlogger.domain.usecases.WindowSessionUseCase
+import com.five9th.motionlogger.domain.usecases.ml.AnalyzeWindowUseCase
+import com.five9th.motionlogger.presentation.ui.fragment.WindowInfoDialogFragment
 import com.five9th.motionlogger.presentation.uimodel.SessionItem
 import com.five9th.motionlogger.presentation.uimodel.UiMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.roundToInt
@@ -28,16 +38,18 @@ class AnalysisViewModel @Inject constructor (
     private val getSessionInfoUseCase: GetSessionInfoUseCase,
     private val getSessionUseCase: GetSessionUseCase,
     private val analyzeSessionUseCase: AnalyzeSessionUseCase,
+    private val analyzeWindowUseCase: AnalyzeWindowUseCase,
     savedStateHandle: SavedStateHandle,
     application: Application
 ) : AndroidViewModel(application) {
 
     private val tag = "AnalysisViewModel"
 
-    // id must be put as extra to the activity's intent
+    // ID must be put as extra to the activity's intent
     private val sessionId: Int = savedStateHandle[EXTRA_ID] ?: ID_UNDEFINED
 
-    private var session: CollectingSession? = null
+    private var session: CollectingSession? = null  // <-- maybe we don't need to keep it
+    private var sessionWindows = listOf<SampleWindow>()
 
     private val mapper = UiMapper(application)
 
@@ -54,8 +66,11 @@ class AnalysisViewModel @Inject constructor (
     private val _messageSF = MutableStateFlow("")
     val messageSF = _messageSF.asStateFlow()
 
-    private val _analysisResultSF = MutableStateFlow("")
-    val analysisResultSF = _analysisResultSF.asStateFlow()
+    private val _analysisResultTextSF = MutableStateFlow("")
+    val analysisResultTextSF = _analysisResultTextSF.asStateFlow()
+
+    private val _predictionsSF = MutableSharedFlow<List<WindowPrediction>>()
+    val predictionsSF = _predictionsSF.asSharedFlow()
     // ----------
 
 
@@ -86,22 +101,31 @@ class AnalysisViewModel @Inject constructor (
 
     private fun loadSessionAndAnalyse() {
         viewModelScope.launch {
-            session = getSessionUseCase(sessionId)
+            withContext(Dispatchers.IO) {
+                session = getSessionUseCase(sessionId)
+            }
 
             session?.let {
-                // display samples count
-                _sampleCountSF.value = String.format(
-                    Locale.getDefault(), "%d", it.samples.size)
-
-                // run analysis
-                tryRunAnalysis(it)
+                processLoadedSession(it)
             }
         }
     }
 
-    private suspend fun tryRunAnalysis(session: CollectingSession) {
+    private suspend fun processLoadedSession(session: CollectingSession) {
+        // display samples count
+        _sampleCountSF.value = String.format(
+            Locale.getDefault(), "%d", session.samples.size)
+
+        // windowing
+        sessionWindows = WindowSessionUseCase().invoke(session)
+
+        // run analysis
+        tryRunAnalysis(sessionWindows)
+    }
+
+    private suspend fun tryRunAnalysis(windows: List<SampleWindow>) {
         try {
-            runAnalysis(session)
+            runAnalysis(windows)
         }
         catch (e: CancellationException) {
             throw e // always rethrow
@@ -112,25 +136,27 @@ class AnalysisViewModel @Inject constructor (
         }
     }
 
-    private suspend fun runAnalysis(session: CollectingSession) {
+    private suspend fun runAnalysis(windows: List<SampleWindow>) {
 
-        val result = analyzeSessionUseCase(session)
+        val result = analyzeSessionUseCase(windows)
 
         if (result.windowResults.isEmpty()) {
             showError(ErrorType.SESSION_TOO_SHORT)
             return
         }
 
-        val percentages = result.getPercentages()
+        _predictionsSF.emit(result.windowResults)
 
-        var text = ""  // <-- not so great but will do for now
-
-        for ((act, percent) in percentages) {
-            text += "${getActivityName(act)}: ${(percent * 100).roundToInt()}%\n"
-        }
-
-        // display result
-        _analysisResultSF.value = text
+//        val percentages = result.getPercentages()
+//
+//        var text = ""  // <-- not so great but will do for now
+//
+//        for ((act, percent) in percentages) {
+//            text += "${getActivityName(act)}: ${(percent * 100).roundToInt()}%\n"
+//        }
+//
+//        // display result
+//        _analysisResultTextSF.value = text
     }
 
     private fun getActivityName(act: ActivityClass): String {
@@ -145,6 +171,25 @@ class AnalysisViewModel @Inject constructor (
 
         return application.getString(resId)
     }
+
+    fun onWindowPredictionClick(prediction: WindowPrediction, manager: FragmentManager) {
+        Log.d(tag, "Window #${prediction.windowIndex}: ${getActivityName(prediction.predictedClass)}")
+
+        viewModelScope.launch {
+            val score = getScore(prediction.windowIndex)
+
+            val fragment = WindowInfoDialogFragment.newInstance(score, prediction.windowIndex)
+            fragment.show(manager, "window")
+        }
+    }
+
+    private suspend fun getScore(windowIdx: Int): List<Float> {
+        val w = sessionWindows[windowIdx]
+        val result = analyzeWindowUseCase(w)
+
+        return result.scores
+    }
+
 
 
     private enum class ErrorType {ID_UNDEFINED, SESSION_TOO_SHORT}

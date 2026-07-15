@@ -1,8 +1,7 @@
 package com.five9th.motionlogger.data.repos
 
 import android.app.Application
-import android.util.Log
-import com.five9th.motionlogger.data.datamodel.RepoMapper
+import com.five9th.motionlogger.data.datamodel.FilesRepoMapper
 import com.five9th.motionlogger.data.datamodel.SessionCSVModel
 import com.five9th.motionlogger.domain.entities.CollectingSession
 import com.five9th.motionlogger.domain.entities.SensorSample
@@ -28,7 +27,7 @@ class FilesRepoImpl @Inject constructor (
             Regex("""session-(\d+)-(.*)-(.+)-(.+)\.csv""")
     }
 
-    private val mapper = RepoMapper()
+    private val mapper = FilesRepoMapper()
 
     override suspend fun saveSession(session: CollectingSession) {
         saveSamples(mapper.mapDomainToFileModel(session))
@@ -46,14 +45,11 @@ class FilesRepoImpl @Inject constructor (
     }
 
     private fun writeSamples(writer: BufferedWriter, fileModel: SessionCSVModel) {
-        val columnNames = fileModel.columns.joinToString(separator = ",")
-        writer.appendLine(columnNames)
+        writer.appendLine(fileModel.header)
 
         for (s in fileModel.samples) {
             writer.appendLine(
-                "${s.timestampMs},${s.accX},${s.accY},${s.accZ}," +
-                        "${s.gyroX},${s.gyroY},${s.gyroZ}," +
-                        "${s.roll},${s.pitch},${s.yaw}"
+                "${s.timestampMs}," + s.values.joinToString(",")
             )
         }
     }
@@ -96,46 +92,40 @@ class FilesRepoImpl @Inject constructor (
     }
 
     private fun readSessionFromCsv(file: File): SessionCSVModel {
-        val samples = mutableListOf<SensorSample>()
+        val lines = file.readLines()
 
-        var headerStr: String
-
-        file.bufferedReader().use { reader ->
-
-            headerStr = reader.readLine() // column names
-
-            reader.lineSequence().forEach { line ->
-
-                if (line.isBlank()) return@forEach
-
-                // for now it's hardcoded: timestamp, acc, gyro, position
-                val tokens = line.split(",")
-
-                // basic safety check
-                if (tokens.size < 10) return@forEach
-
-                try {
-                    samples += SensorSample(
-                        timestampMs = tokens[0].toLong(),
-                        accX = tokens[1].toFloat(),
-                        accY = tokens[2].toFloat(),
-                        accZ = tokens[3].toFloat(),
-                        gyroX = tokens[4].toFloat(),
-                        gyroY = tokens[5].toFloat(),
-                        gyroZ = tokens[6].toFloat(),
-                        roll = tokens[7].toFloat(),
-                        pitch = tokens[8].toFloat(),
-                        yaw = tokens[9].toFloat()
-                    )
-                } catch (ex: NumberFormatException) {
-                    Log.d("FilesRepo", "Failed to parse line: '$line'")
-                }
-            }
+        require(lines.isNotEmpty()) {
+            "CSV file is empty"
         }
+
+        val header = lines.first().trim()
+        val expectedColumns = header.split(',').size
+
+        val samples = lines
+            .drop(1)
+            .filter { it.isNotBlank() }
+            .mapIndexed { lineIndex, line ->
+                val cols = line.split(',')
+
+                require(cols.size == expectedColumns) {
+                    "Line ${lineIndex + 2}: expected $expectedColumns columns, got ${cols.size}"
+                }
+
+                val timestampMs = cols[0].trim().toLong()
+
+                val values = FloatArray(cols.size - 1) { i ->
+                    cols[i + 1].trim().toFloat()
+                }
+
+                SensorSample(
+                    timestampMs = timestampMs,
+                    values = values
+                )
+            }
 
         return SessionCSVModel(
             filename = file.name,
-            columns = headerStr.split(','),
+            header = header,
             samples = samples
         )
     }

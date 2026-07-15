@@ -18,7 +18,7 @@ class KeywordValidator(private val til: TextInputLayout) {
 
     private fun validate(input: String) {
         til.error = if (isValid(input)) null
-        else til.context.getString(R.string.err_forbiden_characters)
+        else til.context.getString(R.string.err_forbidden_characters)
     }
 
     fun getCurrentWordOrNull(): String? {

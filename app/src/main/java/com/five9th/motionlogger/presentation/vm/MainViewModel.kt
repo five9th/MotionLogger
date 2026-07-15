@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.ComponentName
 import android.content.ServiceConnection
 import android.os.IBinder
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
@@ -12,8 +13,9 @@ import com.five9th.motionlogger.domain.entities.SessionInfo
 import com.five9th.motionlogger.domain.usecases.GetSensorsInfoUseCase
 import com.five9th.motionlogger.domain.usecases.ObserveSessionListUseCase
 import com.five9th.motionlogger.domain.usecases.ReloadSavedSessionsUseCase
-import com.five9th.motionlogger.presentation.uimodel.CollectionStats
+import com.five9th.motionlogger.domain.usecases.schema.GetCurrentSchemaUseCase
 import com.five9th.motionlogger.presentation.service.SensorCollectionService
+import com.five9th.motionlogger.presentation.uimodel.CollectionStats
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +31,10 @@ class MainViewModel @Inject constructor (
     private val getSensorsInfoUseCase: GetSensorsInfoUseCase,
     private val reloadSavedSessionsUseCase: ReloadSavedSessionsUseCase,
     private val observeSessionListUseCase: ObserveSessionListUseCase,
+
+    private val getCurrentSchemaUseCase: GetCurrentSchemaUseCase,
+
+    realTimeRunner: RealTimeRecognitionRunner,
     application: Application
 ) : AndroidViewModel(application) {
 
@@ -52,6 +58,12 @@ class MainViewModel @Inject constructor (
 
     private val _sessionListSF = MutableStateFlow<List<SessionInfo>>(listOf())
     val sessionListSF: StateFlow<List<SessionInfo>> = _sessionListSF.asStateFlow()
+
+    /** Activity order: ["dws", "ups", "wlk", "jog", "std", "sit"] */
+    val currentActivityScoresSF = realTimeRunner.currentScoresSF
+
+    val realTimeRecognitionMsgSF = realTimeRunner.messageSF
+
 
     init {
         viewModelScope.launch {
@@ -117,6 +129,19 @@ class MainViewModel @Inject constructor (
     }
 
 
+    // ---- Real-time HAR ----
+    init {
+        realTimeRunner.start()
+
+        // debug
+        viewModelScope.launch {
+            realTimeRunner.currentScoresSF.collect {
+                Log.d(tag, "scores: $it")
+            }
+        }
+    }
+
+
     // ---- Public methods for Activity ----
 
     fun getSensorsInfo() {
@@ -132,8 +157,11 @@ class MainViewModel @Inject constructor (
     fun startCollect() {
         if (isCollectingSF.value) return
 
+        val schemaVer = getCurrentSchemaUseCase()?.version
+        Log.d(tag, "Got schema version: $schemaVer")
+
         // Start as foreground service
-        val intent = SensorCollectionService.newIntentStart(application)
+        val intent = SensorCollectionService.newIntentStart(application, schemaVer!!)
         application.startForegroundService(intent)
 
         // Also bind to get updates
